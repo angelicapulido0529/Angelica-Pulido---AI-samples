@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bloggy — Your little corner of the internet</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+
+:root {
+    --pink: #ff3d9a;
+    --pink-light: #ffd1ea;
+    --pink-soft: #fff0f8;
+    --pink-dark: #c2185b;
+    --silver: #d4d4d8;
+    --silver-light: #f5f5f7;
+    --silver-dark: #929298;
+    --white: #ffffff;
+    --black: #252329;
+    --muted: #74717a;
+    --shadow: 0 12px 30px rgba(109, 35, 76, .14);
+    --radius: 22px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background:
+        radial-gradient(circle at 10% 10%, rgba(255,255,255,.9) 0 2px, transparent 3px),
+        radial-gradient(circle at 80% 30%, rgba(255,255,255,.7) 0 2px, transparent 3px),
+        linear-gradient(135deg, #ffe8f5, #f1f1f4 45%, #ffdced);
+    background-size: 110px 110px, 160px 160px, auto;
+    color: var(--black);
+    min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(.96);
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar {
+    height: 78px;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(18px);
+    border-bottom: 2px solid rgba(255,61,154,.15);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 28px;
+}
+
+.logo {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--pink);
+    text-shadow: 2px 2px 0 #ffc1e1, 4px 4px 0 rgba(194,24,91,.1);
+    letter-spacing: -1px;
+    white-space: nowrap;
+}
+
+.search {
+    position: relative;
+    flex: 1;
+    max-width: 460px;
+}
+
+.search input {
+    width: 100%;
+    height: 44px;
+    border: 2px solid #dddde2;
+    border-radius: 999px;
+    background: #f5f5f7;
+    padding: 0 18px 0 46px;
+    outline: none;
+    transition: .2s;
+}
+
+.search input:focus {
+    border-color: var(--pink);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(255,61,154,.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 17px;
+    top: 12px;
+    font-size: 17px;
+    color: var(--muted);
+}
+
+.topnav {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.topnav button {
+    border: 0;
+    background: transparent;
+    color: #55525a;
+    padding: 10px 13px;
+    border-radius: 12px;
+    font-weight: 800;
+    transition: .2s;
+}
+
+.topnav button:hover,
+.topnav button.active {
+    background: var(--pink-light);
+    color: var(--pink-dark);
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    position: fixed;
+    left: 20px;
+    top: 105px;
+    width: 72px;
+    background: rgba(255,255,255,.88);
+    backdrop-filter: blur(16px);
+    border: 2px solid rgba(255,255,255,.9);
+    border-radius: 28px;
+    padding: 10px;
+    box-shadow: var(--shadow);
+    z-index: 90;
+}
+
+.side-btn {
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 17px;
+    margin: 3px 0;
+    background: transparent;
+    color: #6d6970;
+    font-size: 19px;
+    font-weight: 800;
+    transition: .2s;
+    position: relative;
+}
+
+.side-btn:hover,
+.side-btn.active {
+    background: linear-gradient(145deg, #ff8fc6, #ff3d9a);
+    color: white;
+    box-shadow: 0 7px 15px rgba(255,61,154,.28);
+}
+
+.side-btn span {
+    display: block;
+    font-size: 9px;
+    margin-top: 2px;
+    font-weight: 800;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+main {
+    margin-left: 116px;
+    padding: 105px 30px 50px;
+    max-width: 1500px;
+    margin-right: auto;
+}
+
+.page {
+    display: none;
+    animation: pageIn .35s ease;
+}
+
+.page.active {
+    display: block;
+}
+
+@keyframes pageIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 38px;
+    margin-bottom: 5px;
+}
+
+.page-subtitle {
+    color: var(--muted);
+    margin-bottom: 25px;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.dashboard {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 24px;
+}
+
+.card {
+    background: rgba(255,255,255,.9);
+    border: 2px solid rgba(255,255,255,.95);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+    min-height: 235px;
+    border-radius: 30px;
+    padding: 32px;
+    background:
+        linear-gradient(125deg, rgba(255,255,255,.8), rgba(255,209,234,.55)),
+        linear-gradient(135deg, #ff54a6, #c2185b);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 270px;
+    height: 270px;
+    right: -50px;
+    top: -100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,.8), rgba(255,255,255,.05));
+    box-shadow: 0 0 0 30px rgba(255,255,255,.1), 0 0 0 60px rgba(255,255,255,.05);
+}
+
+.hero::after {
+    content: "BLOGGY";
+    position: absolute;
+    right: 35px;
+    bottom: 5px;
+    font-family: Fredoka;
+    font-size: 80px;
+    font-weight: 700;
+    color: rgba(255,255,255,.13);
+}
+
+.hero h1 {
+    position: relative;
+    z-index: 2;
+    font-family: Fredoka;
+    font-size: 46px;
+    max-width: 580px;
+}
+
+.hero p {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+    margin-top: 8px;
+    font-size: 17px;
+    color: #5e4050;
+}
+
+/* =========================
+   COMPOSER
+========================= */
+
+.composer {
+    margin-bottom: 22px;
+}
+
+.composer-header {
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    margin-bottom: 17px;
+}
+
+.mini-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    background: var(--pink-light);
+    display: grid;
+    place-items: center;
+    font-size: 25px;
+    border: 2px solid white;
+}
+
+.composer-header strong {
+    font-size: 16px;
+}
+
+.composer-header small {
+    display: block;
+    color: var(--muted);
+}
+
+.input,
+textarea,
+select {
+    border: 2px solid #e2e1e5;
+    background: #fafafd;
+    border-radius: 15px;
+    padding: 13px 15px;
+    width: 100%;
+    outline: none;
+    transition: .2s;
+}
+
+.input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 4px rgba(255,61,154,.08);
+    background: white;
+}
+
+.post-title-input {
+    margin-bottom: 10px;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 10px;
+}
+
+.tool-btn {
+    border: 1px solid #dedde2;
+    background: #f3f3f5;
+    border-radius: 10px;
+    padding: 7px 11px;
+    font-weight: 800;
+}
+
+.tool-btn:hover {
+    background: var(--pink-light);
+}
+
+.composer-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    gap: 10px;
+}
+
+.mood-picker {
+    display: flex;
+    gap: 7px;
+}
+
+.mood {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background: #eeeef1;
+    font-size: 17px;
+}
+
+.mood.selected {
+    border-color: var(--pink);
+    background: var(--pink-light);
+}
+
+.primary-btn {
+    border: 0;
+    border-radius: 14px;
+    padding: 12px 21px;
+    background: linear-gradient(180deg, #ff70b5, #ff2f91);
+    color: white;
+    font-weight: 900;
+    box-shadow: inset 0 2px rgba(255,255,255,.5), 0 7px 15px rgba(255,61,154,.22);
+    transition: .2s;
+}
+
+.primary-btn:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+/* =========================
+   POSTS
+========================= */
+
+.post {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.post-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    background: var(--pink-light);
+    border: 2px solid white;
+    overflow: hidden;
+    font-size: 25px;
+}
+
+.post-meta strong {
+    display: block;
+}
+
+.post-meta span {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.post-mood {
+    margin-left: auto;
+    background: var(--pink-soft);
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 13px;
+}
+
+.post h3 {
+    font-family: Fredoka;
+    font-size: 25px;
+    margin: 17px 0 8px;
+}
+
+.post-body {
+    color: #4f4b53;
+    line-height: 1.65;
+    white-space: pre-wrap;
+}
+
+.post-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed #ddd8dd;
+}
+
+.action-btn {
+    border: 0;
+    background: #f6f4f7;
+    border-radius: 11px;
+    padding: 8px 13px;
+    color: #605c64;
+    font-weight: 800;
+    transition: .2s;
+}
+
+.action-btn:hover,
+.action-btn.liked {
+    background: var(--pink-light);
+    color: var(--pink-dark);
+}
+
+.comments {
+    margin-top: 12px;
+    display: none;
+}
+
+.comments.open {
+    display: block;
+}
+
+.comment {
+    padding: 9px 12px;
+    background: #f7f5f8;
+    border-radius: 11px;
+    margin-top: 7px;
+    font-size: 13px;
+}
+
+.comment-form {
+    display: flex;
+    gap: 7px;
+    margin-top: 9px;
+}
+
+.comment-form input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 9px;
+}
+
+.comment-form button {
+    border: 0;
+    background: var(--pink);
+    color: white;
+    border-radius: 10px;
+    padding: 0 13px;
+}
+
+/* =========================
+   SIDEBAR WIDGETS
+========================= */
+
+.widget {
+    margin-bottom: 18px;
+}
+
+.widget-title {
+    font-family: Fredoka;
+    font-size: 21px;
+    margin-bottom: 15px;
+}
+
+.friend {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.friend:last-child {
+    border: 0;
+}
+
+.friend-avatar {
+    width: 43px;
+    height: 43px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    background: var(--pink-light);
+    font-size: 21px;
+}
+
+.friend-info {
+    flex: 1;
+}
+
+.friend-info strong {
+    display: block;
+    font-size: 14px;
+}
+
+.friend-info small {
+    color: #8c8790;
+}
+
+.online {
+    width: 9px;
+    height: 9px;
+    background: #57c878;
+    border-radius: 50%;
+}
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-cover {
+    height: 210px;
+    border-radius: 28px 28px 0 0;
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.2), transparent),
+        repeating-linear-gradient(120deg, #ff3d9a 0 18px, #ff70b5 18px 36px, #ffd1ea 36px 54px);
+    position: relative;
+}
+
+.profile-card {
+    overflow: hidden;
+    padding: 0;
+}
+
+.profile-info {
+    padding: 0 28px 28px;
+    position: relative;
+}
+
+.big-avatar {
+    width: 135px;
+    height: 135px;
+    border-radius: 35px;
+    background: #ffd1ea;
+    border: 7px solid white;
+    position: relative;
+    margin-top: -70px;
+    display: grid;
+    place-items: center;
+    font-size: 65px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.profile-name {
+    font-family: Fredoka;
+    font-size: 34px;
+    margin-top: 12px;
+}
+
+.username {
+    color: var(--pink-dark);
+    font-weight: 800;
+}
+
+.bio {
+    color: #605b63;
+    margin: 10px 0 16px;
+    max-width: 650px;
+    line-height: 1.6;
+}
+
+.status-box {
+    background: var(--pink-soft);
+    border: 1px solid #ffd0e8;
+    border-radius: 14px;
+    padding: 13px 15px;
+    margin-bottom: 18px;
+}
+
+.stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.stat {
+    background: #f6f4f7;
+    border-radius: 14px;
+    padding: 12px 18px;
+    text-align: center;
+    min-width: 100px;
+}
+
+.stat strong {
+    font-family: Fredoka;
+    font-size: 22px;
+    display: block;
+}
+
+.stat span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.edit-btn {
+    border: 2px solid var(--pink);
+    background: white;
+    color: var(--pink-dark);
+    padding: 10px 16px;
+    border-radius: 13px;
+    font-weight: 900;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(38,20,30,.38);
+    backdrop-filter: blur(5px);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-bg.open {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    width: 100%;
+    max-width: 560px;
+    border-radius: 25px;
+    padding: 26px;
+    box-shadow: 0 25px 70px rgba(0,0,0,.25);
+    animation: modalIn .25s ease;
+}
+
+@keyframes modalIn {
+    from { transform: scale(.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal h2 {
+    font-family: Fredoka;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.secondary-btn {
+    border: 0;
+    background: #eeeef1;
+    padding: 11px 17px;
+    border-radius: 13px;
+    font-weight: 800;
+}
+
+/* =========================
+   AVATAR CREATOR
+========================= */
+
+.avatar-builder {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 25px;
+}
+
+.avatar-preview {
+    min-height: 490px;
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at 50% 20%, rgba(255,255,255,.7), transparent 35%),
+        linear-gradient(135deg, #ffd1ea, #cfcfd4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: sticky;
+    top: 100px;
+    overflow: hidden;
+}
+
+.avatar-stage {
+    width: 240px;
+    height: 300px;
+    position: relative;
+}
+
+.avatar-body {
+    position: absolute;
+    width: 170px;
+    height: 100px;
+    bottom: 0;
+    left: 35px;
+    background: #ff3d9a;
+    border-radius: 80px 80px 25px 25px;
+    border: 5px solid rgba(255,255,255,.8);
+}
+
+.avatar-face {
+    position: absolute;
+    width: 155px;
+    height: 175px;
+    left: 42px;
+    top: 48px;
+    border-radius: 45% 45% 48% 48%;
+    background: #e4a47c;
+    border: 5px solid rgba(255,255,255,.85);
+    z-index: 2;
+}
+
+.avatar-eyes {
+    position: absolute;
+    top: 112px;
+    left: 68px;
+    z-index: 4;
+    font-size: 29px;
+    letter-spacing: 35px;
+}
+
+.avatar-hair {
+    position: absolute;
+    width: 175px;
+    height: 100px;
+    top: 32px;
+    left: 32px;
+    border-radius: 90px 90px 30px 30px;
+    background: #522b2b;
+    z-index: 3;
+}
+
+.avatar-accessory {
+    position: absolute;
+    z-index: 6;
+    top: 110px;
+    left: 50px;
+    width: 150px;
+    text-align: center;
+    font-size: 42px;
+}
+
+.avatar-controls {
+    display: grid;
+    gap: 16px;
+}
+
+.control-group {
+    background: #faf9fb;
+    border: 1px solid #ece9ee;
+    border-radius: 18px;
+    padding: 16px;
+}
+
+.control-group h3 {
+    font-family: Fredoka;
+    margin-bottom: 12px;
+}
+
+.option-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.option {
+    border: 2px solid #ddd;
+    background: white;
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: .15s;
+}
+
+.option:hover,
+.option.selected {
+    border-color: var(--pink);
+    background: var(--pink-light);
+    color: var(--pink-dark);
+}
+
+/* =========================
+   RADIO
+========================= */
+
+.radio-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.radio-player {
+    min-height: 500px;
+    background:
+        radial-gradient(circle at center, rgba(255,255,255,.45), transparent 40%),
+        linear-gradient(145deg, #a7a7ad, #eeeeef 40%, #9d9da3);
+    border-radius: 32px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cd {
+    width: 245px;
+    height: 245px;
+    margin: 20px auto 30px;
+    border-radius: 50%;
+    background:
+        repeating-conic-gradient(
+            from 0deg,
+            #bfc0c4 0deg 12deg,
+            #ececee 12deg 24deg,
+            #a9a9af 24deg 35deg,
+            #f8b9da 35deg 47deg
+        );
+    box-shadow: 0 15px 35px rgba(0,0,0,.2);
+    position: relative;
+    transition: transform .3s;
+}
+
+.cd.playing {
+    animation: spin 2.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.cd::after {
+    content: "";
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    left: 86px;
+    top: 86px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 15px #d3d3d8;
+}
+
+.cd::before {
+    content: "";
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    background: #777;
+    border-radius: 50%;
+    left: 116px;
+    top: 116px;
+    z-index: 2;
+}
+
+.now-playing {
+    text-align: center;
+}
+
+.now-playing small {
+    color: #69676c;
+}
+
+.now-playing h2 {
+    font-family: Fredoka;
+    margin-top: 4px;
+}
+
+.progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.6);
+    margin: 22px 0 15px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 32%;
+    background: var(--pink);
+    border-radius: inherit;
+    transition: width .3s;
+}
+
+.radio-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.radio-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 0;
+    background: white;
+    box-shadow: 0 5px 12px rgba(0,0,0,.13);
+    font-weight: 900;
+}
+
+.radio-btn.main {
+    width: 62px;
+    height: 62px;
+    background: var(--pink);
+    color: white;
+}
+
+.equalizer {
+    display: flex;
+    height: 65px;
+    justify-content: center;
+    align-items: end;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.equalizer i {
+    width: 6px;
+    height: 25px;
+    border-radius: 5px;
+    background: var(--pink);
+}
+
+.equalizer.playing i {
+    animation: eq .55s infinite alternate ease-in-out;
+}
+
+.equalizer i:nth-child(2) { animation-delay: .1s; }
+.equalizer i:nth-child(3) { animation-delay: .2s; }
+.equalizer i:nth-child(4) { animation-delay: .05s; }
+.equalizer i:nth-child(5) { animation-delay: .18s; }
+.equalizer i:nth-child(6) { animation-delay: .3s; }
+.equalizer i:nth-child(7) { animation-delay: .12s; }
+
+@keyframes eq {
+    from { height: 10px; }
+    to { height: 58px; }
+}
+
+.track-list {
+    display: grid;
+    gap: 9px;
+}
+
+.track {
+    display: flex;
+    align-items: center;
+    padding: 13px;
+    background: #faf9fb;
+    border-radius: 14px;
+    gap: 12px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.track.active {
+    border-color: var(--pink);
+    background: var(--pink-soft);
+}
+
+.track-number {
+    font-family: Fredoka;
+    color: var(--pink);
+}
+
+.track-info {
+    flex: 1;
+}
+
+.track-info strong {
+    display: block;
+}
+
+.track-info small {
+    color: var(--muted);
+}
+
+/* =========================
+   FASHION
+========================= */
+
+.fashion-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.fashion-card {
+    overflow: hidden;
+    padding: 0;
+    transition: .25s;
+}
+
+.fashion-card:hover {
+    transform: translateY(-5px);
+}
+
+.fashion-image {
+    height: 220px;
+    display: grid;
+    place-items: center;
+    font-family: Fredoka;
+    font-size: 42px;
+    color: rgba(255,255,255,.8);
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.3), transparent),
+        linear-gradient(145deg, #ff3d9a, #c2185b);
+}
+
+.fashion-card:nth-child(2) .fashion-image {
+    background: linear-gradient(145deg, #cfd0d4, #888990);
+}
+
+.fashion-card:nth-child(3) .fashion-image {
+    background: linear-gradient(145deg, #ffd1ea, #ff70b5);
+}
+
+.fashion-card:nth-child(4) .fashion-image {
+    background: linear-gradient(145deg, #77777d, #dddde2);
+}
+
+.fashion-card:nth-child(5) .fashion-image {
+    background: linear-gradient(145deg, #ff93c6, #eeeef0);
+}
+
+.fashion-card:nth-child(6) .fashion-image {
+    background: linear-gradient(145deg, #a6a6ac, #ff5ba9);
+}
+
+.fashion-content {
+    padding: 19px;
+}
+
+.fashion-content h3 {
+    font-family: Fredoka;
+    font-size: 22px;
+}
+
+.fashion-content p {
+    margin-top: 6px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* =========================
+   GAME
+========================= */
+
+.game-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 25px;
+}
+
+.game-card {
+    text-align: center;
+}
+
+.game-board {
+    width: 100%;
+    max-width: 650px;
+    height: 430px;
+    margin: 20px auto;
+    border-radius: 24px;
+    background:
+        radial-gradient(circle, rgba(255,255,255,.4) 1px, transparent 2px),
+        linear-gradient(135deg, #ffd1ea, #bfc0c5);
+    background-size: 28px 28px, auto;
+    border: 5px solid white;
+    position: relative;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.star {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    background: white;
+    border: 4px solid var(--pink);
+    transform: rotate(45deg);
+    border-radius: 8px;
+    animation: starPulse .8s infinite alternate;
+}
+
+@keyframes starPulse {
+    to {
+        transform: rotate(45deg) scale(1.15);
+        box-shadow: 0 0 15px rgba(255,61,154,.5);
+    }
+}
+
+.score {
+    font-family: Fredoka;
+    font-size: 40px;
+    color: var(--pink-dark);
+}
+
+.game-side {
+    display: grid;
+    gap: 15px;
+}
+
+.leader {
+    display: flex;
+    justify-content: space-between;
+    padding: 11px;
+    border-bottom: 1px solid #eee;
+}
+
+/* =========================
+   EMPTY / TOAST
+========================= */
+
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+}
+
+.toast {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    background: #28252b;
+    color: white;
+    border-radius: 13px;
+    padding: 13px 18px;
+    z-index: 500;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: .3s;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width: 1050px) {
+    .topnav {
+        display: none;
+    }
+
+    .dashboard,
+    .game-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .fashion-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .radio-wrap {
+        grid-template-columns: 1fr;
+    }
+
+    .avatar-builder {
+        grid-template-columns: 1fr;
+    }
+
+    .avatar-preview {
+        position: static;
+        min-height: 390px;
+    }
+}
+
+@media(max-width: 700px) {
+    .topbar {
+        height: 68px;
+        padding: 0 15px;
+        gap: 12px;
+    }
+
+    .logo {
+        font-size: 28px;
+    }
+
+    .search {
+        max-width: none;
+    }
+
+    main {
+        margin-left: 0;
+        padding: 88px 15px 30px;
+    }
+
+    .sidebar {
+        left: 10px;
+        right: 10px;
+        top: auto;
+        bottom: 10px;
+        width: auto;
+        height: 66px;
+        display: flex;
+        justify-content: space-around;
+        padding: 5px;
+        border-radius: 22px;
+    }
+
+    .side-btn {
+        width: 48px;
+        height: 52px;
+    }
+
+    .hero {
+        padding: 24px;
+    }
+
+    .hero h1 {
+        font-size: 34px;
+    }
+
+    .fashion-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-title {
+        font-size: 31px;
+    }
+
+    .composer-footer {
+        align-items: flex-end;
+        flex-direction: column;
+    }
+
+    .profile-cover {
+        height: 150px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+    <div class="logo">Bloggy</div>
+
+    <div class="search">
+        <span class="search-icon">⌕</span>
+        <input id="searchInput" type="search" placeholder="Buscar en Bloggy...">
+    </div>
+
+    <nav class="topnav">
+        <button data-page="home">Inicio</button>
+        <button data-page="explore">Explorar</button>
+        <button data-page="radio">Radio</button>
+        <button data-page="fashion">Moda</button>
+        <button data-page="profile">Mi Perfil</button>
+        <button data-page="publish">Publicar</button>
+    </nav>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <button class="side-btn active" data-page="home">⌂<span>Inicio</span></button>
+    <button class="side-btn" data-page="profile">○<span>Perfil</span></button>
+    <button class="side-btn" data-page="avatar">◇<span>Avatar</span></button>
+    <button class="side-btn" data-page="posts">▤<span>Posts</span></button>
+    <button class="side-btn" data-page="friends">♢<span>Amigos</span></button>
+    <button class="side-btn" data-page="radio">◉<span>Radio</span></button>
+    <button class="side-btn" data-page="fashion">△<span>Moda</span></button>
+    <button class="side-btn" data-page="game">×<span>Juego</span></button>
+</aside>
+
+<main>
+
+<!-- =========================
+     HOME
+========================= -->
+
+<section id="home" class="page active">
+
+    <div class="hero">
+        <h1>Your little corner of the internet.</h1>
+        <p>
+            Publica lo que piensas, descubre nuevos perfiles,
+            escucha la radio y haz de Bloggy tu propio espacio.
+        </p>
+    </div>
+
+    <div class="dashboard">
+
+        <div>
+            <div class="card composer">
+                <div class="composer-header">
+                    <div class="mini-avatar" id="composerAvatar">●</div>
+                    <div>
+                        <strong id="composerName">Alex</strong>
+                        <small>Comparte algo con tu gente</small>
+                    </div>
+                </div>
+
+                <input
+                    id="postTitle"
+                    class="input post-title-input"
+                    placeholder="Título de tu publicación"
+                >
+
+                <textarea
+                    id="postBody"
+                    placeholder="¿Qué está pasando por tu cabeza?"
+                ></textarea>
+
+                <div class="toolbar">
+                    <button class="tool-btn" onclick="formatText('bold')">Negrita</button>
+                    <button class="tool-btn" onclick="formatText('italic')">Cursiva</button>
+                    <button class="tool-btn" onclick="changeTextColor()">Color</button>
+                </div>
+
+                <div class="composer-footer">
+                    <div class="mood-picker">
+                        <button class="mood selected" data-mood="shine">◇</button>
+                        <button class="mood" data-mood="happy">●</button>
+                        <button class="mood" data-mood="dream">✦</button>
+                        <button class="mood" data-mood="cool">△</button>
+                    </div>
+
+                    <button class="primary-btn" onclick="createPost()">
+                        Publicar
+                    </button>
+                </div>
+            </div>
+
+            <div id="feed"></div>
+        </div>
+
+        <aside>
+
+            <div class="card widget">
+                <div class="widget-title">Ahora mismo</div>
+
+                <div class="friend">
+                    <div class="friend-avatar">◌</div>
+                    <div class="friend-info">
+                        <strong>Luna</strong>
+                        <small>editando su blog</small>
+                    </div>
+                    <span class="online"></span>
+                </div>
+
+                <div class="friend">
+                    <div class="friend-avatar">△</div>
+                    <div class="friend-info">
+                        <strong>Sam</strong>
+                        <small>escuchando Bloggy Radio</small>
+                    </div>
+                    <span class="online"></span>
+                </div>
+
+                <div class="friend">
+                    <div class="friend-avatar">◇</div>
+                    <div class="friend-info">
+                        <strong>Nico</strong>
+                        <small>viendo tendencias</small>
+                    </div>
+                    <span class="online"></span>
+                </div>
+            </div>
+
+            <div class="card widget">
+                <div class="widget-title">Mini arcade</div>
+                <p style="color:var(--muted);font-size:14px;line-height:1.5;">
+                    ¿Cuántas estrellas puedes atrapar?
+                </p>
+
+                <button class="primary-btn" style="margin-top:15px;width:100%"
+                        onclick="navigate('game')">
+                    Jugar
+                </button>
+            </div>
+
+            <div class="card widget">
+                <div class="widget-title">Trending</div>
+                <p style="font-size:14px;margin:9px 0;">#outfitretro</p>
+                <p style="font-size:14px;margin:9px 0;">#bloggyradio</p>
+                <p style="font-size:14px;margin:9px 0;">#findyourstyle</p>
+            </div>
+
+        </aside>
+    </div>
+</section>
+
+<!-- =========================
+     EXPLORE
+========================= -->
+
+<section id="explore" class="page">
+
+    <h1 class="page-title">Explorar</h1>
+    <p class="page-subtitle">
+        Descubre lo que está pasando en Bloggy.
+    </p>
+
+    <div class="dashboard">
+        <div id="exploreFeed"></div>
+
+        <aside>
+            <div class="card">
+                <div class="widget-title">Temas populares</div>
+                <div class="friend">
+                    <div class="friend-info">
+                        <strong>#MiBlog</strong>
+                        <small>1.8K publicaciones</small>
+                    </div>
+                </div>
+                <div class="friend">
+                    <div class="friend-info">
+                        <strong>#RetroInternet</strong>
+                        <small>962 publicaciones</small>
+                    </div>
+                </div>
+                <div class="friend">
+                    <div class="friend-info">
+                        <strong>#Mood</strong>
+                        <small>734 publicaciones</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+
+<!-- =========================
+     PROFILE
+========================= -->
+
+<section id="profile" class="page">
+
+    <h1 class="page-title">Mi Perfil</h1>
+    <p class="page-subtitle">Tu pequeño espacio dentro de Bloggy.</p>
+
+    <div class="card profile-card">
+
+        <div class="profile-cover"></div>
+
+        <div class="profile-info">
+
+            <div class="big-avatar" id="profileAvatar">
+                ●
+            </div>
+
+            <div class="profile-name" id="profileName">
+                Alex
+            </div>
+
+            <div class="username" id="profileUsername">
+                @alex
+            </div>
+
+            <div class="bio" id="profileBio">
+                coleccionando momentos, playlists y pequeñas historias.
+            </div>
+
+            <div class="status-box">
+                <strong>Estado actual</strong>
+                <div id="profileStatus" style="margin-top:4px;">
+                    intentando decidir qué canción poner primero.
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <strong id="statPosts">0</strong>
+                    <span>Publicaciones</span>
+                </div>
+
+                <div class="stat">
+                    <strong id="statFriends">128</strong>
+                    <span>Amigos</span>
+                </div>
+
+                <div class="stat">
+                    <strong>342</strong>
+                    <span>Seguidores</span>
+                </div>
+            </div>
+
+            <button
+                class="edit-btn"
+                style="margin-top:20px"
+                onclick="openProfileModal()">
+                Editar perfil
+            </button>
+
+        </div>
+    </div>
+</section>
+
+<!-- =========================
+     AVATAR
+========================= -->
+
+<section id="avatar" class="page">
+
+    <h1 class="page-title">Editar Avatar</h1>
+    <p class="page-subtitle">Construye tu personaje pixel-perfect.</p>
+
+    <div class="avatar-builder">
+
+        <div class="avatar-preview">
+            <div class="avatar-stage" id="avatarStage">
+
+                <div class="avatar-body"></div>
+
+                <div
+                    class="avatar-face"
+                    id="avatarFace">
+                </div>
+
+                <div
+                    class="avatar-hair"
+                    id="avatarHair">
+                </div>
+
+                <div
+                    class="avatar-eyes"
+                    id="avatarEyes">
+                    • •
+                </div>
+
+                <div
+                    class="avatar-accessory"
+                    id="avatarAccessory">
+                </div>
+
+            </div>
+        </div>
+
+        <div class="avatar-controls">
+
+            <div class="control-group">
+                <h3>Tono de piel</h3>
+
+                <div class="option-grid">
+                    <button class="option" onclick="setSkin('#f2c29d')">Claro</button>
+                    <button class="option" onclick="setSkin('#e4a47c')">Medio</button>
+                    <button class="option" onclick="setSkin('#b97854')">Moreno</button>
+                    <button class="option" onclick="setSkin('#714735')">Oscuro</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Peinado</h3>
+
+                <div class="option-grid">
+                    <button class="option" onclick="setHair('#522b2b')">Chocolate</button>
+                    <button class="option" onclick="setHair('#111111')">Negro</button>
+                    <button class="option" onclick="setHair('#e4a73c')">Rubio</button>
+                    <button class="option" onclick="setHair('#d75f9e')">Rosa</button>
+                    <button class="option" onclick="setHair('#8c6ad8')">Lavanda</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Ojos</h3>
+
+                <div class="option-grid">
+                    <button class="option" onclick="setEyes('• •')">Simple</button>
+                    <button class="option" onclick="setEyes('● ●')">Redondos</button>
+                    <button class="option" onclick="setEyes('⌁ ⌁')">Soft</button>
+                    <button class="option" onclick="setEyes('◉ ◉')">Retro</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Accesorio</h3>
+
+                <div class="option-grid">
+                    <button class="option" onclick="setAccessory('')">Ninguno</button>
+                    <button class="option" onclick="setAccessory('◇')">Lentes</button>
+                    <button class="option" onclick="setAccessory('△')">Audífonos</button>
+                    <button class="option" onclick="setAccessory('—')">Gorra</button>
+                    <button class="option" onclick="setAccessory('✦')">Brillo</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Fondo</h3>
+
+                <div class="option-grid">
+                    <button class="option" onclick="setAvatarBg('#ffd1ea')">Pink</button>
+                    <button class="option" onclick="setAvatarBg('#d9d9de')">Silver</button>
+                    <button class="option" onclick="setAvatarBg('#ff8fc6')">Bubble</button>
+                    <button class="option" onclick="setAvatarBg('#8f8f96')">CD</button>
+                </div>
+            </div>
+
+            <button class="primary-btn" onclick="saveAvatar()">
+                Guardar avatar
+            </button>
+
+        </div>
+    </div>
+</section>
+
+<!-- =========================
+     POSTS
+========================= -->
+
+<section id="posts" class="page">
+
+    <h1 class="page-title">Mis Publicaciones</h1>
+    <p class="page-subtitle">Todo lo que has dejado en tu rincón de Bloggy.</p>
+
+    <div id="myPosts"></div>
+</section>
+
+<!-- =========================
+     FRIENDS
+========================= -->
+
+<section id="friends" class="page">
+
+    <h1 class="page-title">Amigos</h1>
+    <p class="page-subtitle">La gente que forma parte de tu Bloggy.</p>
+
+    <div class="card">
+        <div id="friendsList"></div>
+    </div>
+</section>
+
+<!-- =========================
+     RADIO
+========================= -->
+
+<section id="radio" class="page">
+
+    <h1 class="page-title">Bloggy Radio</h1>
+    <p class="page-subtitle">La estación que suena mientras navegas.</p>
+
+    <div class="radio-wrap">
+
+        <div class="radio-player">
+
+            <div class="cd" id="cd"></div>
+
+            <div class="now-playing">
+                <small>SONANDO AHORA</small>
+                <h2 id="trackTitle">Neon Dreams</h2>
+                <p id="trackArtist">The Pixel Kids</p>
+
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <div class="radio-controls">
+                    <button class="radio-btn" onclick="previousTrack()">|◀</button>
+                    <button class="radio-btn main" id="playButton" onclick="toggleRadio()">▶</button>
+                    <button class="radio-btn" onclick="nextTrack()">▶|</button>
+                </div>
+
+                <div class="equalizer" id="equalizer">
+                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="widget-title">Top canciones sonando</div>
+            <div id="trackList" class="track-list"></div>
+        </div>
+
+    </div>
+</section>
+
+<!-- =========================
+     FASHION
+========================= -->
+
+<section id="fashion" class="page">
+
+    <h1 class="page-title">Moda & Tendencias</h1>
+    <p class="page-subtitle">
+        Inspiración retro para darle personalidad a tu estilo.
+    </p>
+
+    <div class="fashion-grid">
+
+        <article class="card fashion-card">
+            <div class="fashion-image">Y2K</div>
+            <div class="fashion-content">
+                <h3>Glossy Everything</h3>
+                <p>
+                    Acabados brillantes, superficies metálicas y pequeños detalles
+                    que parecen sacados de una interfaz del 2004.
+                </p>
+            </div>
+        </article>
+
+        <article class="card fashion-card">
+            <div class="fashion-image">CD</div>
+            <div class="fashion-content">
+                <h3>Silver Core</h3>
+                <p>
+                    El plateado vuelve a ser protagonista. Mezcla superficies
+                    metálicas con prendas suaves para equilibrar el look.
+                </p>
+            </div>
+        </article>
+
+        <article class="card fashion-card">
+            <div class="fashion-image">PINK</div>
+            <div class="fashion-content">
+                <h3>Bubble Pink</h3>
+                <p>
+                    Rosa intenso, rosa pastel y accesorios juguetones sin
+                    perder la estética cuidada.
+                </p>
+            </div>
+        </article>
+
+        <article class="card fashion-card">
+            <div class="fashion-image">2000</div>
+            <div class="fashion-content">
+                <h3>Retro Digital</h3>
+                <p>
+                    Recupera la sensación de las primeras interfaces sociales:
+                    texturas, pequeños gráficos y mucho carácter.
+                </p>
+            </div>
+        </article>
+
+        <article class="card fashion-card">
+            <div class="fashion-image">DENIM</div>
+            <div class="fashion-content">
+                <h3>Denim Remix</h3>
+                <p>
+                    Una base clásica puede sentirse totalmente distinta cuando
+                    se combina con detalles digitales y accesorios retro.
+                </p>
+            </div>
+        </article>
+
+        <article class="card fashion-card">
+            <div class="fashion-image">POP</div>
+            <div class="fashion-content">
+                <h3>Pop Details</h3>
+                <p>
+                    La tendencia está en los pequeños detalles: broches,
+                    lentes, bolsos y accesorios inesperados.
+                </p>
+            </div>
+        </article>
+
+    </div>
+</section>
+
+<!-- =========================
+     GAME
+========================= -->
+
+<section id="game" class="page">
+
+    <h1 class="page-title">Bloggy Arcade</h1>
+    <p class="page-subtitle">
+        Atrapa todas las estrellas que puedas antes de que desaparezcan.
+    </p>
+
+    <div class="game-layout">
+
+        <div class="card game-card">
+
+            <div>
+                Puntuación
+                <div class="score" id="gameScore">0</div>
+            </div>
+
+            <div class="game-board" id="gameBoard"></div>
+
+            <button class="primary-btn" onclick="startGame()">
+                Iniciar partida
+            </button>
+
+            <p style="margin-top:12px;color:var(--muted);font-size:13px;">
+                Haz clic sobre las estrellas para sumar puntos.
+            </p>
+        </div>
+
+        <aside class="game-side">
+
+            <div class="card">
+                <div class="widget-title">High Scores</div>
+
+                <div class="leader">
+                    <span>Luna</span>
+                    <strong>142</strong>
+                </div>
+
+                <div class="leader">
+                    <span>Nico</span>
+                    <strong>118</strong>
+                </div>
+
+                <div class="leader">
+                    <span>Sam</span>
+                    <strong>96</strong>
+                </div>
+
+                <div class="leader">
+                    <span>Alex</span>
+                    <strong id="personalHigh">0</strong>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="widget-title">Tip</div>
+                <p style="color:var(--muted);line-height:1.6;font-size:14px;">
+                    Las estrellas aparecen en posiciones aleatorias.
+                    Cada clic correcto aumenta tu puntuación.
+                </p>
+            </div>
+
+        </aside>
+    </div>
+</section>
+
+<!-- =========================
+     PUBLISH
+========================= -->
+
+<section id="publish" class="page">
+
+    <h1 class="page-title">Crear publicación</h1>
+    <p class="page-subtitle">
+        Escribe algo que quieras dejar en internet.
+    </p>
+
+    <div class="card">
+        <input
+            id="postTitle2"
+            class="input post-title-input"
+            placeholder="Título"
+        >
+
+        <textarea
+            id="postBody2"
+            style="min-height:300px"
+            placeholder="Escribe tu publicación..."
+        ></textarea>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:15px;">
+            <button class="primary-btn" onclick="createPostFromPublish()">
+                Publicar
+            </button>
+        </div>
+    </div>
+</section>
+
+</main>
+
+<!-- PROFILE MODAL -->
+
+<div class="modal-bg" id="profileModal">
+
+    <div class="modal">
+
+        <h2>Editar perfil</h2>
+
+        <div class="form-group">
+            <label>Nombre</label>
+            <input id="editName" class="input">
+        </div>
+
+        <div class="form-group">
+            <label>Nombre de usuario</label>
+            <input id="editUsername" class="input">
+        </div>
+
+        <div class="form-group">
+            <label>Biografía</label>
+            <textarea id="editBio" style="min-height:90px"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Estado</label>
+            <input id="editStatus" class="input">
+        </div>
+
+        <div class="modal-actions">
+            <button class="secondary-btn" onclick="closeProfileModal()">
+                Cancelar
+            </button>
+
+            <button class="primary-btn" onclick="saveProfile()">
+                Guardar cambios
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+/* ============================================================
+   BLOGGY APP STATE
+============================================================ */
+
+const state = {
+
+    currentPage: "home",
+
+    profile: {
+        name: "Alex",
+        username: "@alex",
+        bio: "coleccionando momentos, playlists y pequeñas historias.",
+        status: "intentando decidir qué canción poner primero.",
+        friends: 128,
+        avatar: {
+            skin: "#e4a47c",
+            hair: "#522b2b",
+            eyes: "• •",
+            accessory: "",
+            background: "#ffd1ea"
+        }
+    },
+
+    posts: [
+        {
+            id: 1,
+            author: "Luna",
+            username: "@lunacore",
+            avatar: "◌",
+            title: "Hoy sí sentí que el internet era divertido",
+            body: "Me puse a reorganizar mi perfil y terminé pasando una hora cambiando absolutamente todo. Supongo que esa era la idea.",
+            time: "Hace 12 min",
+            mood: "✦",
+            likes: 24,
+            liked: false,
+            comments: [
+                "Necesito ver ese perfil.",
+                "La energía retro está fuerte hoy."
+            ]
+        },
+
+        {
+            id: 2,
+            author: "Sam",
+            username: "@sam.wav",
+            avatar: "△",
+            title: "Playlist para caminar de noche",
+            body: "Tengo una playlist nueva con canciones ficticias que parecen pertenecer a una película que nunca existió. 10/10 experiencia.",
+            time: "Hace 34 min",
+            mood: "◇",
+            likes: 41,
+            liked: false,
+            comments: [
+                "Eso suena exactamente a lo que necesito."
+            ]
+        },
+
+        {
+            id: 3,
+            author: "Nico",
+            username: "@nicodigital",
+            avatar: "◇",
+            title: "La moda está volviendo",
+            body: "Acabo de descubrir que los acabados plateados hacen que literalmente cualquier outfit se sienta como una interfaz del futuro.",
+            time: "Hace 1 h",
+            mood: "●",
+            likes: 18,
+            liked: false,
+            comments: []
+        }
+    ],
+
+    friends: [
+        {
+            name: "Luna",
+            username: "@lunacore",
+            avatar: "◌",
+            status: "editando su blog"
+        },
+        {
+            name: "Sam",
+            username: "@sam.wav",
+            avatar: "△",
+            status: "escuchando Bloggy Radio"
+        },
+        {
+            name: "Nico",
+            username: "@nicodigital",
+            avatar: "◇",
+            status: "viendo tendencias"
+        },
+        {
+            name: "Mia",
+            username: "@miarchive",
+            avatar: "●",
+            status: "escribiendo una nueva publicación"
+        },
+        {
+            name: "Kai",
+            username: "@kaipixels",
+            avatar: "✦",
+            status: "jugando Bloggy Arcade"
+        }
+    ],
+
+    tracks: [
+        {
+            title: "Neon Dreams",
+            artist: "The Pixel Kids"
+        },
+        {
+            title: "Plastic Hearts",
+            artist: "Demo Avenue"
+        },
+        {
+            title: "Digital Summer",
+            artist: "Static Youth"
+        },
+        {
+            title: "After School",
+            artist: "Cherry Computer"
+        },
+        {
+            title: "Midnight Online",
+            artist: "Silver Arcade"
+        }
+    ],
+
+    currentTrack: 0,
+    playing: false,
+    progress: 32,
+    gameScore: 0,
+    highScore: 0
+};
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+
+function navigate(page) {
+
+    state.currentPage = page;
+
+    document.querySelectorAll(".page").forEach(section => {
+        section.classList.remove("active");
+    });
+
+    const target = document.getElementById(page);
+
+    if (target) {
+        target.classList.add("active");
+    }
+
+    document.querySelectorAll("[data-page]").forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.page === page
+        );
+    });
+
+    if (page === "home" || page === "explore") {
+        renderFeed();
+    }
+
+    if (page === "posts") {
+        renderMyPosts();
+    }
+
+    if (page === "friends") {
+        renderFriends();
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+document.querySelectorAll("[data-page]").forEach(button => {
+
+    button.addEventListener("click", () => {
+        navigate(button.dataset.page);
+    });
+
+});
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+let toastTimer;
+
+function toast(message) {
+
+    const element = document.getElementById("toast");
+
+    element.textContent = message;
+    element.classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(() => {
+        element.classList.remove("show");
+    }, 2200);
+}
+
+/* ============================================================
+   FEED
+============================================================ */
+
+function renderFeed() {
+
+    const feed = document.getElementById("feed");
+    const exploreFeed = document.getElementById("exploreFeed");
+
+    const html = state.posts.map(post => createPostHTML(post)).join("");
+
+    if (feed) {
+        feed.innerHTML = html;
+    }
+
+    if (exploreFeed) {
+        exploreFeed.innerHTML = html;
+    }
+
+    updateProfileStats();
+}
+
+function createPostHTML(post) {
+
+    return `
+        <article class="card post">
+
+            <div class="post-head">
+
+                <div class="avatar-circle">
+                    ${post.avatar}
+                </div>
+
+                <div class="post-meta">
+                    <strong>${escapeHTML(post.author)}</strong>
+                    <span>${escapeHTML(post.username)} · ${escapeHTML(post.time)}</span>
+                </div>
+
+                <div class="post-mood">
+                    ${post.mood}
+                </div>
+
+            </div>
+
+            <h3>${escapeHTML(post.title)}</h3>
+
+            <div class="post-body">
+                ${escapeHTML(post.body)}
+            </div>
+
+            <div class="post-actions">
+
+                <button
+                    class="action-btn ${post.liked ? "liked" : ""}"
+                    onclick="toggleLike(${post.id})">
+                    ${post.liked ? "Me encanta" : "Me encanta"}
+                    · ${post.likes}
+                </button>
+
+                <button
+                    class="action-btn"
+                    onclick="toggleComments(${post.id})">
+                    Comentar · ${post.comments.length}
+                </button>
+
+            </div>
+
+            <div
+                class="comments"
+                id="comments-${post.id}">
+
+                ${post.comments.map(comment => `
+                    <div class="comment">
+                        ${escapeHTML(comment)}
+                    </div>
+                `).join("")}
+
+                <div class="comment-form">
+                    <input
+                        id="comment-${post.id}"
+                        placeholder="Escribe un comentario..."
+                    >
+
+                    <button onclick="addComment(${post.id})">
+                        Enviar
+                    </button>
+                </div>
+
+            </div>
+
+        </article>
+    `;
+}
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+/* ============================================================
+   CREATE POST
+============================================================ */
+
+let selectedMood = "shine";
+
+document.querySelectorAll(".mood").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        document.querySelectorAll(".mood")
+            .forEach(m => m.classList.remove("selected"));
+
+        button.classList.add("selected");
+
+        selectedMood = button.dataset.mood;
+    });
+
+});
+
+const moodSymbols = {
+    shine: "◇",
+    happy: "●",
+    dream: "✦",
+    cool: "△"
+};
+
+function createPost() {
+
+    const title = document.getElementById("postTitle").value.trim();
+    const body = document.getElementById("postBody").value.trim();
+
+    if (!title || !body) {
+        toast("Completa el título y el contenido.");
+        return;
+    }
+
+    const post = {
+
+        id: Date.now(),
+
+        author: state.profile.name,
+        username: state.profile.username,
+
+        avatar: getAvatarSymbol(),
+
+        title,
+        body,
+
+        time: "Ahora mismo",
+
+        mood: moodSymbols[selectedMood],
+
+        likes: 0,
+        liked: false,
+
+        comments: []
+    };
+
+    state.posts.unshift(post);
+
+    document.getElementById("postTitle").value = "";
+    document.getElementById("postBody").value = "";
+
+    renderFeed();
+
+    toast("Tu publicación ya está en Bloggy.");
+}
+
+function createPostFromPublish() {
+
+    const title = document.getElementById("postTitle2").value.trim();
+    const body = document.getElementById("postBody2").value.trim();
+
+    if (!title || !body) {
+        toast("Escribe un título y algo de contenido.");
+        return;
+    }
+
+    const post = {
+
+        id: Date.now(),
+
+        author: state.profile.name,
+        username: state.profile.username,
+
+        avatar: getAvatarSymbol(),
+
+        title,
+        body,
+
+        time: "Ahora mismo",
+
+        mood: "◇",
+
+        likes: 0,
+        liked: false,
+
+        comments: []
+    };
+
+    state.posts.unshift(post);
+
+    document.getElementById("postTitle2").value = "";
+    document.getElementById("postBody2").value = "";
+
+    renderFeed();
+
+    toast("Publicado.");
+
+    navigate("home");
+}
+
+/* ============================================================
+   LIKES / COMMENTS
+============================================================ */
+
+function toggleLike(id) {
+
+    const post = state.posts.find(p => p.id === id);
+
+    if (!post) return;
+
+    post.liked = !post.liked;
+
+    post.likes += post.liked ? 1 : -1;
+
+    renderFeed();
+}
+
+function toggleComments(id) {
+
+    const element = document.getElementById(`comments-${id}`);
+
+    if (element) {
+        element.classList.toggle("open");
+    }
+}
+
+function addComment(id) {
+
+    const input = document.getElementById(`comment-${id}`);
+
+    if (!input) return;
+
+    const value = input.value.trim();
+
+    if (!value) return;
+
+    const post = state.posts.find(p => p.id === id);
+
+    if (!post) return;
+
+    post.comments.push(value);
+
+    renderFeed();
+
+    setTimeout(() => {
+
+        const comments = document.getElementById(`comments-${id}`);
+
+        if (comments) {
+            comments.classList.add("open");
+        }
+
+    }, 0);
+
+    toast("Comentario agregado.");
+}
+
+/* ============================================================
+   PROFILE
+============================================================ */
+
+function openProfileModal() {
+
+    document.getElementById("editName").value =
+        state.profile.name;
+
+    document.getElementById("editUsername").value =
+        state.profile.username;
+
+    document.getElementById("editBio").value =
+        state.profile.bio;
+
+    document.getElementById("editStatus").value =
+        state.profile.status;
+
+    document.getElementById("profileModal")
+        .classList.add("open");
+}
+
+function closeProfileModal() {
+
+    document.getElementById("profileModal")
+        .classList.remove("open");
+}
+
+function saveProfile() {
+
+    state.profile.name =
+        document.getElementById("editName").value.trim() || "Alex";
+
+    state.profile.username =
+        document.getElementById("editUsername").value.trim() || "@alex";
+
+    state.profile.bio =
+        document.getElementById("editBio").value.trim();
+
+    state.profile.status =
+        document.getElementById("editStatus").value.trim();
+
+    updateProfile();
+
+    closeProfileModal();
+
+    toast("Perfil actualizado.");
+}
+
+function updateProfile() {
+
+    document.getElementById("profileName").textContent =
+        state.profile.name;
+
+    document.getElementById("profileUsername").textContent =
+        state.profile.username;
+
+    document.getElementById("profileBio").textContent =
+        state.profile.bio;
+
+    document.getElementById("profileStatus").textContent =
+        state.profile.status;
+
+    document.getElementById("composerName").textContent =
+        state.profile.name;
+
+    const symbol = getAvatarSymbol();
+
+    document.getElementById("composerAvatar").textContent = symbol;
+    document.getElementById("profileAvatar").textContent = symbol;
+
+    document.getElementById("profileAvatar").style.background =
+        state.profile.avatar.background;
+
+    document.getElementById("composerAvatar").style.background =
+        state.profile.avatar.background;
+
+    updateProfileStats();
+}
+
+function updateProfileStats() {
+
+    const myPosts = state.posts.filter(
+        post => post.username === state.profile.username
+    );
+
+    document.getElementById("statPosts").textContent =
+        myPosts.length;
+}
+
+/* ============================================================
+   AVATAR
+============================================================ */
+
+function getAvatarSymbol() {
+
+    if (state.profile.avatar.accessory) {
+        return state.profile.avatar.accessory;
+    }
+
+    return "●";
+}
+
+function setSkin(color) {
+
+    state.profile.avatar.skin = color;
+
+    document.getElementById("avatarFace")
+        .style.background = color;
+}
+
+function setHair(color) {
+
+    state.profile.avatar.hair = color;
+
+    document.getElementById("avatarHair")
+        .style.background = color;
+}
+
+function setEyes(value) {
+
+    state.profile.avatar.eyes = value;
+
+    document.getElementById("avatarEyes")
+        .textContent = value;
+}
+
+function setAccessory(value) {
+
+    state.profile.avatar.accessory = value;
+
+    document.getElementById("avatarAccessory")
+        .textContent = value;
+}
+
+function setAvatarBg(color) {
+
+    state.profile.avatar.background = color;
+
+    document.querySelector(".avatar-preview")
+        .style.background = color;
+}
+
+function saveAvatar() {
+
+    updateProfile();
+
+    toast("Avatar guardado en tu perfil.");
+}
+
+/* ============================================================
+   MY POSTS
+============================================================ */
+
+function renderMyPosts() {
+
+    const container = document.getElementById("myPosts");
+
+    const posts = state.posts.filter(
+        post => post.username === state.profile.username
+    );
+
+    if (!posts.length) {
+
+        container.innerHTML = `
+            <div class="card empty">
+                <h3>Todavía no has publicado nada.</h3>
+                <p style="margin-top:7px;">
+                    Tu primera historia puede empezar aquí.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML =
+        posts.map(post => createPostHTML(post)).join("");
+}
+
+/* ============================================================
+   FRIENDS
+============================================================ */
+
+function renderFriends() {
+
+    const container = document.getElementById("friendsList");
+
+    container.innerHTML = state.friends.map(friend => `
+
+        <div class="friend" style="padding:16px 8px;">
+
+            <div class="friend-avatar">
+                ${friend.avatar}
+            </div>
+
+            <div class="friend-info">
+                <strong>${escapeHTML(friend.name)}</strong>
+                <small>
+                    ${escapeHTML(friend.username)} ·
+                    ${escapeHTML(friend.status)}
+                </small>
+            </div>
+
+            <span class="online"></span>
+
+            <button
+                class="secondary-btn"
+                onclick="toast('Ya eres amigo de ${escapeHTML(friend.name)}.')">
+                Amigos
+            </button>
+
+        </div>
+
+    `).join("");
+}
+
+/* ============================================================
+   RADIO
+============================================================ */
+
+function renderTracks() {
+
+    const container = document.getElementById("trackList");
+
+    container.innerHTML = state.tracks.map((track, index) => `
+
+        <div
+            class="track ${index === state.currentTrack ? "active" : ""}"
+            onclick="selectTrack(${index})">
+
+            <div class="track-number">
+                ${String(index + 1).padStart(2, "0")}
+            </div>
+
+            <div class="track-info">
+                <strong>${escapeHTML(track.title)}</strong>
+                <small>${escapeHTML(track.artist)}</small>
+            </div>
+
+            <div>
+                ${index === state.currentTrack ? "●" : ""}
+            </div>
+
+        </div>
+
+    `).join("");
+}
+
+function selectTrack(index) {
+
+    state.currentTrack = index;
+    state.progress = 0;
+
+    updateRadio();
+
+    if (!state.playing) {
+        toggleRadio();
+    }
+}
+
+function updateRadio() {
+
+    const track = state.tracks[state.currentTrack];
+
+    document.getElementById("trackTitle").textContent =
+        track.title;
+
+    document.getElementById("trackArtist").textContent =
+        track.artist;
+
+    document.getElementById("progressBar").style.width =
+        `${state.progress}%`;
+
+    renderTracks();
+}
+
+function toggleRadio() {
+
+    state.playing = !state.playing;
+
+    const cd = document.getElementById("cd");
+    const equalizer = document.getElementById("equalizer");
+    const button = document.getElementById("playButton");
+
+    cd.classList.toggle("playing", state.playing);
+    equalizer.classList.toggle("playing", state.playing);
+
+    button.textContent = state.playing ? "Ⅱ" : "▶";
+
+    toast(state.playing ? "Radio reproduciendo." : "Radio pausada.");
+}
+
+function nextTrack() {
+
+    state.currentTrack =
+        (state.currentTrack + 1) % state.tracks.length;
+
+    state.progress = 0;
+
+    updateRadio();
+}
+
+function previousTrack() {
+
+    state.currentTrack =
+        (state.currentTrack - 1 + state.tracks.length) %
+        state.tracks.length;
+
+    state.progress = 0;
+
+    updateRadio();
+}
+
+setInterval(() => {
+
+    if (!state.playing) return;
+
+    state.progress += 1.2;
+
+    if (state.progress >= 100) {
+
+        state.progress = 0;
+
+        nextTrack();
+
+    }
+
+    document.getElementById("progressBar")
+        .style.width = `${state.progress}%`;
+
+}, 1000);
+
+/* ============================================================
+   GAME
+============================================================ */
+
+let gameInterval = null;
+
+function startGame() {
+
+    clearInterval(gameInterval);
+
+    const board = document.getElementById("gameBoard");
+
+    state.gameScore = 0;
+
+    document.getElementById("gameScore").textContent = "0";
+
+    board.innerHTML = "";
+
+    spawnStar();
+
+    gameInterval = setInterval(() => {
+
+        spawnStar();
+
+    }, 950);
+
+    setTimeout(() => {
+
+        clearInterval(gameInterval);
+
+        board.innerHTML = "";
+
+        if (state.gameScore > state.highScore) {
+
+            state.highScore = state.gameScore;
+
+            document.getElementById("personalHigh").textContent =
+                state.highScore;
+        }
+
+        toast(`Partida terminada: ${state.gameScore} puntos.`);
+
+    }, 30000);
+
+    toast("Partida iniciada.");
+}
+
+function spawnStar() {
+
+    const board = document.getElementById("gameBoard");
+
+    const star = document.createElement("div");
+
+    star.className = "star";
+
+    const maxX = board.clientWidth - 45;
+    const maxY = board.clientHeight - 45;
+
+    star.style.left =
+        Math.max(5, Math.random() * maxX) + "px";
+
+    star.style.top =
+        Math.max(5, Math.random() * maxY) + "px";
+
+    star.addEventListener("click", event => {
+
+        event.stopPropagation();
+
+        state.gameScore += 5;
+
+        document.getElementById("gameScore").textContent =
+            state.gameScore;
+
+        star.remove();
+
+    });
+
+    board.appendChild(star);
+
+    setTimeout(() => {
+
+        if (star.parentElement) {
+            star.remove();
+        }
+
+    }, 1600);
+}
+
+/* ============================================================
+   SEARCH
+============================================================ */
+
+document.getElementById("searchInput")
+    .addEventListener("input", event => {
+
+        const query = event.target.value
+            .toLowerCase()
+            .trim();
+
+        if (!query) {
+
+            renderFeed();
+
+            return;
+        }
+
+        const results = state.posts.filter(post => {
+
+            return (
+                post.title.toLowerCase().includes(query) ||
+                post.body.toLowerCase().includes(query) ||
+                post.author.toLowerCase().includes(query) ||
+                post.username.toLowerCase().includes(query)
+            );
+
+        });
+
+        const html = results.length
+            ? results.map(createPostHTML).join("")
+            : `
+                <div class="card empty">
+                    <h3>No encontramos nada.</h3>
+                    <p style="margin-top:8px;">
+                        Prueba con otra palabra.
+                    </p>
+                </div>
+            `;
+
+        document.getElementById("feed").innerHTML = html;
+
+        if (state.currentPage !== "home") {
+            navigate("home");
+        }
+
+    });
+
+/* ============================================================
+   BASIC TEXT TOOLS
+============================================================ */
+
+function formatText(type) {
+
+    const textarea = document.getElementById("postBody");
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    if (start === end) {
+
+        toast("Selecciona una parte del texto primero.");
+
+        return;
+    }
+
+    const selected = textarea.value.slice(start, end);
+
+    const wrapper =
+        type === "bold"
+            ? `**${selected}**`
+            : `*${selected}*`;
+
+    textarea.setRangeText(
+        wrapper,
+        start,
+        end,
+        "end"
+    );
+}
+
+function changeTextColor() {
+
+    toast("En esta versión el color se representa visualmente en el editor.");
+}
+
+/* ============================================================
+   INITIALIZATION
+============================================================ */
+
+function initializeAvatar() {
+
+    setSkin(state.profile.avatar.skin);
+    setHair(state.profile.avatar.hair);
+    setEyes(state.profile.avatar.eyes);
+    setAccessory(state.profile.avatar.accessory);
+    setAvatarBg(state.profile.avatar.background);
+}
+
+function initialize() {
+
+    updateProfile();
+
+    initializeAvatar();
+
+    renderFeed();
+
+    renderTracks();
+
+    renderFriends();
+
+    document.querySelectorAll(".page").forEach(page => {
+        page.classList.remove("active");
+    });
+
+    document.getElementById("home").classList.add("active");
+}
+
+initialize();
+
+</script>
+
+</body>
+</html>
