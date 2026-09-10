@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Centro de Control Financiero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#16223E;
+  --navy-light:#2E4C7A;
+  --navy-lighter:#3E5E8C;
+  --bg:#F6F4EF;
+  --surface:#FFFFFF;
+  --surface-alt:#ECE9E2;
+  --border:#DCD8CE;
+  --text:#20242F;
+  --text-muted:#6B7078;
+  --green:#2F6B4F;
+  --green-bg:#E6F1EB;
+  --red:#A23B3B;
+  --red-bg:#F6E9E9;
+  --amber:#9B7A16;
+  --amber-bg:#FBF1DB;
+  --radius:6px;
+  --shadow:0 1px 2px rgba(22,34,62,0.08);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Inter',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:14px;
+  line-height:1.5;
+}
+button{font-family:inherit;}
+a{color:inherit;}
+#app{display:flex;min-height:100vh;}
+
+/* Sidebar */
+#sidebar{
+  width:232px;flex-shrink:0;background:var(--navy);color:#EDEFF4;
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+}
+.brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.brand-title{font-size:15px;font-weight:700;letter-spacing:0.2px;}
+.brand-sub{font-size:11.5px;color:#AAB6CC;margin-top:2px;}
+.nav{flex:1;padding:14px 10px;overflow-y:auto;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:5px;
+  color:#C7CEDD;cursor:pointer;font-size:13.5px;margin-bottom:2px;font-weight:500;
+  border:none;background:none;width:100%;text-align:left;
+}
+.nav-item svg{width:17px;height:17px;flex-shrink:0;opacity:0.85;}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.nav-item.active{background:var(--navy-light);color:#fff;}
+.sidebar-footer{padding:12px 10px 16px;border-top:1px solid rgba(255,255,255,0.1);}
+
+/* Main */
+#main{flex:1;min-width:0;display:flex;flex-direction:column;}
+#topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;position:sticky;top:0;z-index:5;
+}
+#page-title{font-size:19px;font-weight:700;color:var(--navy);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.search-box{
+  display:flex;align-items:center;gap:6px;background:var(--surface-alt);
+  border:1px solid var(--border);border-radius:5px;padding:6px 10px;width:230px;
+}
+.search-box input{border:none;background:none;outline:none;font-size:13px;width:100%;color:var(--text);}
+.search-box svg{width:15px;height:15px;color:var(--text-muted);flex-shrink:0;}
+
+#content{padding:24px 28px 60px;flex:1;}
+
+/* Buttons */
+.btn{
+  border-radius:5px;padding:9px 16px;font-size:13.5px;font-weight:600;
+  cursor:pointer;border:1px solid transparent;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-primary:hover{background:var(--navy-light);}
+.btn-secondary{background:var(--surface);color:var(--navy);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--surface-alt);}
+.btn-danger{background:var(--surface);color:var(--red);border:1px solid var(--red);}
+.btn-danger:hover{background:var(--red-bg);}
+.btn-sm{padding:5px 10px;font-size:12.5px;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;border-radius:4px;}
+.icon-btn:hover{background:var(--surface-alt);color:var(--text);}
+
+/* Cards / layout */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+.grid{display:grid;gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);}}
+.section-title{font-size:15px;font-weight:700;color:var(--navy);margin:0 0 14px;}
+.stat-label{font-size:12.5px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+.stat-value{font-size:26px;font-weight:700;margin-top:6px;color:var(--text);}
+.stat-sub{font-size:12px;color:var(--text-muted);margin-top:6px;}
+.stat-sub.positive{color:var(--green);}
+.stat-sub.negative{color:var(--red);}
+.pos{color:var(--green);}
+.neg{color:var(--red);}
+.amber{color:var(--amber);}
+
+.period-select select, select, input[type=text], input[type=number], input[type=date], textarea{
+  border:1px solid var(--border);border-radius:5px;padding:8px 10px;font-size:13.5px;
+  background:var(--surface);color:var(--text);font-family:inherit;
+}
+select:focus, input:focus, textarea:focus{outline:2px solid var(--navy-lighter);outline-offset:1px;}
+label{font-size:12.5px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:5px;}
+.field{margin-bottom:14px;}
+.field-row{display:flex;gap:14px;}
+.field-row .field{flex:1;}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{
+  text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:0.3px;
+  color:var(--text-muted);font-weight:700;padding:9px 12px;border-bottom:2px solid var(--border);
+  cursor:pointer;user-select:none;white-space:nowrap;
+}
+td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:hover td{background:var(--surface-alt);}
+.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11.5px;font-weight:600;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-gray{background:var(--surface-alt);color:var(--text-muted);}
+.row-actions{display:flex;gap:2px;justify-content:flex-end;}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.tab{padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;}
+.tab.active{color:var(--navy);border-color:var(--navy);}
+
+.empty-state{text-align:center;padding:50px 20px;color:var(--text-muted);}
+.empty-state .empty-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.empty-state .btn{margin-top:14px;}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(22,26,38,0.45);display:flex;
+  align-items:center;justify-content:center;z-index:50;padding:20px;
+}
+.modal{background:var(--surface);border-radius:8px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 12px 34px rgba(0,0,0,0.25);}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-header h3{margin:0;font-size:16px;color:var(--navy);}
+.modal-body{padding:20px 22px;}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+.type-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.type-choice button{
+  padding:16px;border:1px solid var(--border);border-radius:6px;background:var(--surface);
+  cursor:pointer;text-align:left;font-family:inherit;
+}
+.type-choice button:hover{border-color:var(--navy-light);background:var(--surface-alt);}
+.type-choice .t-title{font-weight:700;font-size:13.5px;color:var(--navy);}
+.type-choice .t-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
+
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:80;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--navy);color:#fff;padding:11px 18px;border-radius:6px;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,0.2);}
+
+.acct-card{border:1px solid var(--border);border-radius:6px;padding:16px 18px;background:var(--surface);}
+.acct-card .acct-name{font-weight:700;font-size:14.5px;color:var(--navy);}
+.acct-card .acct-type{font-size:12px;color:var(--text-muted);}
+.acct-card .acct-balance{font-size:22px;font-weight:700;margin-top:10px;}
+
+.filters-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:flex-end;}
+.filters-bar .field{margin-bottom:0;min-width:140px;}
+
+.alert-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.alert-item:last-child{border-bottom:none;}
+.alert-dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+
+.charts-row{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:16px;}
+@media(max-width:1100px){.charts-row{grid-template-columns:1fr;}}
+.chart-box{position:relative;height:260px;}
+
+.checkbox-row{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--text);}
+.checkbox-row input{margin:0;}
+
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:#C9C4B7;border-radius:5px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-title">Centro Financiero</div>
+      <div class="brand-sub">Control de finanzas personales</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-footer">
+      <button class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configuración
+      </button>
+    </div>
+  </aside>
+  <div id="main">
+    <div id="topbar">
+      <div id="page-title">Resumen financiero</div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="global-search" type="text" placeholder="Buscar movimientos, personas...">
+        </div>
+        <button class="btn btn-primary" id="btn-new-movement">+ Nuevo movimiento</button>
+      </div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+<div id="modal-root"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+/* =========================================================
+   UTILIDADES GENERALES
+========================================================= */
+const fmt = n => (n<0?'-':'') + '$' + Math.abs(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+const uid = () => 'id_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const todayStr = () => new Date().toISOString().slice(0,10);
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function toast(msg){
+  const wrap=document.getElementById('toast-wrap');
+  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* =========================================================
+   ESTADO Y PERSISTENCIA
+========================================================= */
+const STORAGE_KEY = 'finanzas_app_state_v1';
+let DATA = null;
+let saveTimer = null;
+
+function defaultExpenseCategories(){
+  return [
+    {id:'cat_vivienda', name:'Vivienda'},
+    {id:'cat_servicios', name:'Servicios'},
+    {id:'cat_alimentacion', name:'Alimentación'},
+    {id:'cat_transporte', name:'Transporte'},
+    {id:'cat_salud', name:'Salud'},
+    {id:'cat_educacion', name:'Educación'},
+    {id:'cat_finanzas', name:'Finanzas'},
+    {id:'cat_personal', name:'Personal'},
+    {id:'cat_entretenimiento', name:'Entretenimiento'},
+    {id:'cat_compras', name:'Compras'},
+    {id:'cat_deudas', name:'Deudas'},
+    {id:'cat_otros_e', name:'Otros'},
+  ];
+}
+function defaultIncomeCategories(){
+  return [
+    {id:'cat_trabajo', name:'Trabajo'},
+    {id:'cat_negocio', name:'Negocio'},
+    {id:'cat_inversiones', name:'Inversiones'},
+    {id:'cat_ventas', name:'Ventas'},
+    {id:'cat_transferencias_i', name:'Transferencias'},
+    {id:'cat_otros_i', name:'Otros'},
+  ];
+}
+function defaultConcepts(){
+  const e = [
+    ['Renta','cat_vivienda'],['Hipoteca','cat_vivienda'],['Mantenimiento del hogar','cat_vivienda'],['Predial','cat_vivienda'],
+    ['Agua','cat_servicios'],['Luz','cat_servicios'],['Gas','cat_servicios'],['Internet','cat_servicios'],['Teléfono','cat_servicios'],['Streaming','cat_servicios'],
+    ['Supermercado','cat_alimentacion'],['Restaurante','cat_alimentacion'],['Comida','cat_alimentacion'],['Cafetería','cat_alimentacion'],
+    ['Gasolina','cat_transporte'],['Transporte público','cat_transporte'],['Taxi / Uber','cat_transporte'],['Mantenimiento automóvil','cat_transporte'],
+    ['Médico','cat_salud'],['Medicamentos','cat_salud'],['Seguro médico','cat_salud'],['Estudios médicos','cat_salud'],
+    ['Colegiatura','cat_educacion'],['Curso','cat_educacion'],['Libros','cat_educacion'],['Material escolar','cat_educacion'],
+    ['Pago de tarjeta','cat_finanzas'],['Préstamo','cat_finanzas'],['Intereses','cat_finanzas'],['Comisión bancaria','cat_finanzas'],
+    ['Ropa','cat_personal'],['Entretenimiento','cat_entretenimiento'],['Viajes','cat_personal'],['Regalos','cat_personal'],
+    ['Otro','cat_otros_e'],
+  ];
+  const i = [
+    ['Sueldo','cat_trabajo'],['Nómina','cat_trabajo'],['Bonificación','cat_trabajo'],['Comisión','cat_trabajo'],
+    ['Venta','cat_ventas'],['Freelance','cat_negocio'],['Devolución','cat_otros_i'],['Intereses','cat_inversiones'],
+    ['Inversión','cat_inversiones'],['Regalo','cat_otros_i'],['Otro','cat_otros_i'],
+  ];
+  const out=[];
+  e.forEach(([name,cat])=>out.push({id:uid(),name,type:'expense',categoryId:cat,favorite:false,active:true,isDefault:true}));
+  i.forEach(([name,cat])=>out.push({id:uid(),name,type:'income',categoryId:cat,favorite:false,active:true,isDefault:true}));
+  return out;
+}
+function defaultState(){
+  return {
+    settings:{userName:'', currency:'MXN'},
+    demoSeeded:false,
+    accounts:[], cards:[], transactions:[], contacts:[], debts:[], receivables:[],
+    categories:{expense:defaultExpenseCategories(), income:defaultIncomeCategories()},
+    concepts:defaultConcepts(),
+  };
+}
+
+async function loadData(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY);
+    DATA = res && res.value ? JSON.parse(res.value) : null;
+  }catch(e){ DATA = null; }
+  if(!DATA){
+    DATA = defaultState();
+    seedDemoData();
+    await persist();
+  }
+  // migrate missing fields for safety
+  DATA.settings = DATA.settings || {userName:'',currency:'MXN'};
+}
+function persist(){
+  clearTimeout(saveTimer);
+  return new Promise(resolve=>{
+    saveTimer = setTimeout(async ()=>{
+      try{ await window.storage.set(STORAGE_KEY, JSON.stringify(DATA)); }catch(e){ console.error('Error al guardar', e); }
+      resolve();
+    }, 120);
+  });
+}
+
+function seedDemoData(){
+  const accCash = {id:uid(), name:'Efectivo', type:'cash', initialBalance:1500, currency:'MXN', status:'active', isDemo:true};
+  const accBank = {id:uid(), name:'Cuenta BBVA', type:'bank', initialBalance:8000, currency:'MXN', status:'active', isDemo:true};
+  DATA.accounts.push(accCash, accBank);
+  const card = {id:uid(), name:'Tarjeta Oro', institution:'Banamex', limit:20000, cutoffDate:20, dueDate:5, isDemo:true};
+  DATA.cards.push(card);
+  const contact = {id:uid(), name:'Juan Pérez', type:'persona', isDemo:true};
+  DATA.contacts.push(contact);
+  const concept = n => DATA.concepts.find(c=>c.name===n);
+  const now = new Date();
+  const d = off => { const x=new Date(now); x.setDate(x.getDate()-off); return x.toISOString().slice(0,10); };
+  const tx = (o) => DATA.transactions.push(Object.assign({id:uid(), status:'completed', note:'', isDemo:true, createdAt:new Date().toISOString()}, o));
+  tx({type:'income', amount:25000, date:d(20), conceptId:concept('Sueldo').id, categoryId:'cat_trabajo', paymentMethod:'transferencia', accountId:accBank.id});
+  tx({type:'expense', amount:6500, date:d(18), conceptId:concept('Renta').id, categoryId:'cat_vivienda', paymentMethod:'transferencia', accountId:accBank.id});
+  tx({type:'expense', amount:1250, date:d(10), conceptId:concept('Supermercado').id, categoryId:'cat_alimentacion', paymentMethod:'tarjeta_credito', cardId:card.id});
+  tx({type:'expense', amount:620, date:d(7), conceptId:concept('Gasolina').id, categoryId:'cat_transporte', paymentMethod:'efectivo', accountId:accCash.id});
+  tx({type:'expense', amount:480, date:d(4), conceptId:concept('Streaming').id, categoryId:'cat_servicios', paymentMethod:'tarjeta_credito', cardId:card.id});
+  tx({type:'expense', amount:900, date:d(2), conceptId:concept('Restaurante').id, categoryId:'cat_alimentacion', paymentMethod:'tarjeta_credito', cardId:card.id});
+  DATA.debts.push({id:uid(), creditorName:'Préstamo personal - Banco Azteca', contactId:null, originalAmount:15000, balance:9000, startDate:d(90), dueDate:d(-180), interest:12, status:'en_proceso', notes:'', payments:[], isDemo:true});
+  DATA.receivables.push({id:uid(), personName:'Juan Pérez', contactId:contact.id, concept:'Préstamo personal', amount:5000, date:d(30), expectedDate:d(-15), received:1000, status:'parcial', note:'', isDemo:true});
+  DATA.demoSeeded = true;
+}
+
+/* =========================================================
+   CÁLCULOS FINANCIEROS
+========================================================= */
+function accountBalance(accId){
+  const acc = DATA.accounts.find(a=>a.id===accId);
+  if(!acc) return 0;
+  let bal = acc.initialBalance||0;
+  DATA.transactions.forEach(t=>{
+    if(t.type==='income' && t.accountId===accId) bal += t.amount;
+    else if(t.type==='expense' && t.accountId===accId) bal -= t.amount;
+    else if(t.type==='transfer'){
+      if(t.accountId===accId) bal -= t.amount;
+      if(t.toAccountId===accId) bal += t.amount;
+    }
+    else if(t.type==='debt_payment' && t.accountId===accId) bal -= t.amount;
+    else if(t.type==='receivable_payment' && t.accountId===accId) bal += t.amount;
+    else if(t.type==='card_payment' && t.accountId===accId) bal -= t.amount;
+  });
+  return bal;
+}
+function totalCashBalance(){
+  return DATA.accounts.reduce((s,a)=>s+accountBalance(a.id),0);
+}
+function cardUsed(cardId){
+  let used=0;
+  DATA.transactions.forEach(t=>{
+    if(t.type==='expense' && t.cardId===cardId) used += t.amount;
+    if(t.type==='card_payment' && t.cardId===cardId) used -= t.amount;
+  });
+  return Math.max(0, used);
+}
+function inPeriod(dateStr, period){
+  if(period==='all') return true;
+  const d = new Date(dateStr+'T00:00:00');
+  const now = new Date();
+  const startOfDay = x=>{const y=new Date(x); y.setHours(0,0,0,0); return y;};
+  if(period==='today') return startOfDay(d).getTime()===startOfDay(now).getTime();
+  if(period==='week'){ const wk=new Date(now); wk.setDate(wk.getDate()-7); return d>=wk && d<=now; }
+  if(period==='month') return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+  if(period==='lastMonth'){ const lm=new Date(now.getFullYear(), now.getMonth()-1, 1); return d.getFullYear()===lm.getFullYear() && d.getMonth()===lm.getMonth(); }
+  if(period==='year') return d.getFullYear()===now.getFullYear();
+  return true;
+}
+function periodLabel(p){
+  return {today:'Hoy', week:'Esta semana', month:'Este mes', lastMonth:'Mes anterior', year:'Este año', all:'Todo'}[p]||'Este mes';
+}
+function sumByType(type, period){
+  return DATA.transactions.filter(t=>t.type===type && inPeriod(t.date,period)).reduce((s,t)=>s+t.amount,0);
+}
+function conceptName(id){ const c=DATA.concepts.find(c=>c.id===id); return c?c.name:'—'; }
+function categoryName(id, type){
+  const list = DATA.categories[type==='income'?'income':'expense'];
+  const c=(list||[]).find(c=>c.id===id); return c?c.name:'—';
+}
+function accountName(id){ const a=DATA.accounts.find(a=>a.id===id); return a?a.name:null; }
+function cardName(id){ const c=DATA.cards.find(c=>c.id===id); return c?c.name:null; }
+function contactName(id){ const c=DATA.contacts.find(c=>c.id===id); return c?c.name:null; }
+const PAYMENT_METHOD_LABELS = {
+  efectivo:'Efectivo', transferencia:'Transferencia', deposito:'Depósito', cheque:'Cheque',
+  tarjeta_debito:'Tarjeta de débito', tarjeta_credito:'Tarjeta de crédito', otro:'Otro'
+};
+const STATUS_LABELS = {completed:'Completado', pending:'Pendiente', overdue:'Vencido', partial:'Parcial'};
+
+/* =========================================================
+   NAVEGACIÓN
+========================================================= */
+const VIEWS = [
+  {id:'dashboard', label:'Inicio', icon:'home'},
+  {id:'movements', label:'Movimientos', icon:'list'},
+  {id:'accounts', label:'Cuentas', icon:'wallet'},
+  {id:'cards', label:'Tarjetas', icon:'card'},
+  {id:'debts', label:'Deudas', icon:'debt'},
+  {id:'catalog', label:'Categorías y conceptos', icon:'tag'},
+  {id:'reports', label:'Reportes', icon:'chart'},
+];
+const ICONS = {
+  home:'<path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9"/>',
+  list:'<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/>',
+  wallet:'<path d="M3 7a2 2 0 012-2h13a1 1 0 011 1v3"/><path d="M3 7v11a2 2 0 002 2h14a1 1 0 001-1v-6a1 1 0 00-1-1h-5a2 2 0 000 4h6"/>',
+  card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+  debt:'<circle cx="12" cy="12" r="9"/><path d="M9.5 15s1 1.5 2.5 1.5 2.5-1 2.5-2-1-1.5-2.5-2-2.5-1-2.5-2 1-2 2.5-2 2.5 1.5 2.5 1.5"/><path d="M12 6.5v11"/>',
+  tag:'<path d="M20.6 12.6L12 21.2 2.8 12 2.8 4.4 4.4 2.8 12 2.8 20.6 11.4a2 2 0 010 2.2z"/><circle cx="8" cy="8" r="1.3"/>',
+  chart:'<path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/>',
+};
+let currentView = 'dashboard';
+let dashboardPeriod = 'month';
+let movementsFilter = {type:'all', category:'all', account:'all', search:'', sortBy:'date', sortDir:'desc'};
+
+function renderNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = VIEWS.map(v=>`
+    <button class="nav-item ${currentView===v.id?'active':''}" data-view="${v.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ICONS[v.icon]}</svg>
+      ${v.label}
+    </button>`).join('');
+  nav.querySelectorAll('.nav-item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ currentView = btn.dataset.view; navigate(); });
+  });
+}
+function navigate(extra){
+  document.querySelectorAll('#sidebar .nav-item').forEach(b=>b.classList.toggle('active', b.dataset.view===currentView));
+  const titles = {dashboard:'Resumen financiero', movements:'Movimientos', accounts:'Cuentas', cards:'Tarjetas', debts:'Deudas', catalog:'Categorías y conceptos', reports:'Reportes', settings:'Configuración'};
+  document.getElementById('page-title').textContent = titles[currentView] || '';
+  const c = document.getElementById('content');
+  try{
+    if(currentView==='dashboard') renderDashboard(c);
+    else if(currentView==='movements') renderMovements(c, extra);
+    else if(currentView==='accounts') renderAccounts(c);
+    else if(currentView==='cards') renderCards(c);
+    else if(currentView==='debts') renderDebts(c);
+    else if(currentView==='catalog') renderCatalog(c);
+    else if(currentView==='reports') renderReports(c);
+    else if(currentView==='settings') renderSettings(c);
+  }catch(err){
+    // Una falla al dibujar una vista no debe dejar inutilizable el resto de la aplicación
+    // (por ejemplo, la barra lateral y el botón de nuevo movimiento siguen funcionando).
+    console.error('Error al mostrar la vista', currentView, err);
+    c.innerHTML = `<div class="card empty-state"><div class="empty-title">No se pudo mostrar esta sección</div><div>Ocurrió un problema inesperado. Intenta nuevamente o abre otra sección del menú.</div></div>`;
+  }
+}
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+let chartLine=null, chartDonut=null;
+function renderDashboard(root){
+  const p = dashboardPeriod;
+  const income = sumByType('income', p);
+  const expense = sumByType('expense', p);
+  const balance = totalCashBalance();
+  const totalReceivable = DATA.receivables.reduce((s,r)=> s + Math.max(0,(r.amount - (r.received||0))), 0);
+  const totalDebt = DATA.debts.reduce((s,d)=> s + Math.max(0,d.balance), 0);
+  const txCountIncome = DATA.transactions.filter(t=>t.type==='income' && inPeriod(t.date,p)).length;
+  const txCountExpense = DATA.transactions.filter(t=>t.type==='expense' && inPeriod(t.date,p)).length;
+  const pendingPayments = DATA.debts.filter(d=>d.status!=='pagada').length;
+
+  const recent = [...DATA.transactions].sort((a,b)=> (b.date+b.createdAt).localeCompare(a.date+a.createdAt)).slice(0,8);
+
+  root.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div class="period-select">
+        <select id="period-select">
+          ${['today','week','month','lastMonth','year','all'].map(k=>`<option value="${k}" ${k===p?'selected':''}>${periodLabel(k)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-4">
+      <div class="card">
+        <div class="stat-label">Balance actual</div>
+        <div class="stat-value">${fmt(balance)}</div>
+        <div class="stat-sub">Suma de todas tus cuentas</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Ingresos</div>
+        <div class="stat-value pos">${fmt(income)}</div>
+        <div class="stat-sub">${txCountIncome} movimiento(s) · ${periodLabel(p)}</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Egresos</div>
+        <div class="stat-value neg">${fmt(expense)}</div>
+        <div class="stat-sub">${txCountExpense} movimiento(s) · ${periodLabel(p)}</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Deudas y por cobrar</div>
+        <div class="stat-value">${fmt(totalDebt)}</div>
+        <div class="stat-sub">Debo · <span class="pos">${fmt(totalReceivable)} me deben</span></div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="card">
+        <div class="section-title">Evolución de ingresos y egresos</div>
+        <div class="chart-box"><canvas id="chart-line"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Distribución de gastos</div>
+        <div class="chart-box"><canvas id="chart-donut"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px;">
+      <div class="card">
+        <div class="section-title">Alertas</div>
+        <div id="alerts-box"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Próximos vencimientos de tarjeta</div>
+        <div id="card-due-box"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="section-title" style="margin:0;">Últimos movimientos</div>
+        <button class="btn btn-secondary btn-sm" id="view-all-mov">Ver todos</button>
+      </div>
+      ${renderMovementsTable(recent, {compact:true})}
+    </div>
+  `;
+  document.getElementById('period-select').addEventListener('change', e=>{ dashboardPeriod=e.target.value; renderDashboard(root); });
+  document.getElementById('view-all-mov').addEventListener('click', ()=>{ currentView='movements'; navigate(); });
+  attachRowActions(root);
+  renderAlerts();
+  renderCharts(p);
+}
+function renderAlerts(){
+  const box = document.getElementById('alerts-box');
+  const items = [];
+  const now = new Date();
+  DATA.debts.forEach(d=>{
+    if(d.status!=='pagada' && d.dueDate && new Date(d.dueDate) < now) items.push({level:'red', text:`Deuda vencida: ${d.creditorName} — ${fmt(d.balance)} pendiente.`});
+  });
+  DATA.receivables.forEach(r=>{
+    const pend = r.amount-(r.received||0);
+    if(pend>0) items.push({level:'amber', text:`Tienes ${fmt(pend)} pendientes por cobrar de ${r.personName}.`});
+  });
+  if(items.length===0) items.push({level:'green', text:'No hay alertas pendientes por el momento.'});
+  box.innerHTML = items.slice(0,6).map(it=>`
+    <div class="alert-item"><span class="alert-dot" style="background:var(--${it.level==='green'?'green':it.level});"></span><span>${esc(it.text)}</span></div>
+  `).join('');
+
+  const cardBox = document.getElementById('card-due-box');
+  if(DATA.cards.length===0){
+    cardBox.innerHTML = `<div style="color:var(--text-muted);font-size:13px;">No tienes tarjetas registradas.</div>`;
+  } else {
+    cardBox.innerHTML = DATA.cards.map(c=>{
+      const used = cardUsed(c.id);
+      return `<div class="alert-item"><span class="alert-dot" style="background:var(--navy-light);"></span><span>${esc(c.name)}: vence día ${c.dueDate} de cada mes · usado ${fmt(used)} de ${fmt(c.limit)}.</span></div>`;
+    }).join('');
+  }
+}
+function renderCharts(period){
+  const ctx1 = document.getElementById('chart-line');
+  const ctx2 = document.getElementById('chart-donut');
+  if(typeof Chart === 'undefined'){
+    // La librería de gráficas no cargó (por ejemplo, sin conexión a la CDN).
+    // Se degrada de forma segura en vez de romper el resto de la aplicación.
+    [ctx1, ctx2].forEach(ctx=>{
+      if(ctx) ctx.parentElement.innerHTML = `<div class="empty-state" style="padding:30px 10px;"><div class="empty-title">Gráfica no disponible</div><div>No se pudo cargar la librería de gráficas. El resto de la aplicación sigue funcionando con normalidad.</div></div>`;
+    });
+    return;
+  }
+  if(chartLine) chartLine.destroy();
+  if(chartDonut) chartDonut.destroy();
+
+  // Build last 6 buckets by month for the line chart regardless of period, for context
+  const months = [];
+  const now = new Date();
+  for(let i=5;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); months.push(d); }
+  const incomeSeries = months.map(m=> DATA.transactions.filter(t=>t.type==='income' && sameMonth(t.date,m)).reduce((s,t)=>s+t.amount,0));
+  const expenseSeries = months.map(m=> DATA.transactions.filter(t=>t.type==='expense' && sameMonth(t.date,m)).reduce((s,t)=>s+t.amount,0));
+  const labels = months.map(m=> m.toLocaleDateString('es-MX',{month:'short'}));
+
+  chartLine = new Chart(ctx1, {
+    type:'line',
+    data:{labels, datasets:[
+      {label:'Ingresos', data:incomeSeries, borderColor:'#2F6B4F', backgroundColor:'rgba(47,107,79,0.08)', tension:0.25, fill:true},
+      {label:'Egresos', data:expenseSeries, borderColor:'#A23B3B', backgroundColor:'rgba(162,59,59,0.08)', tension:0.25, fill:true},
+    ]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:12,font:{family:'Inter',size:11}}}}, scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString()}}}}
+  });
+
+  const catTotals = {};
+  DATA.transactions.filter(t=>t.type==='expense' && inPeriod(t.date,period)).forEach(t=>{
+    const name = categoryName(t.categoryId,'expense');
+    catTotals[name] = (catTotals[name]||0)+t.amount;
+  });
+  const catLabels = Object.keys(catTotals);
+  const catValues = Object.values(catTotals);
+  const palette = ['#16223E','#2E4C7A','#3E5E8C','#6B7EA0','#9B7A16','#A23B3B','#2F6B4F','#75695A','#8C7A63','#4E5D78'];
+  if(catLabels.length===0){
+    ctx2.parentElement.innerHTML = `<div class="empty-state" style="padding:30px 10px;"><div class="empty-title">Sin gastos registrados</div><div>Aún no hay egresos en este período.</div></div>`;
+  } else {
+    chartDonut = new Chart(ctx2, {
+      type:'doughnut',
+      data:{labels:catLabels, datasets:[{data:catValues, backgroundColor:palette}]},
+      options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right', labels:{boxWidth:10,font:{family:'Inter',size:11}}}}}
+    });
+  }
+}
+function sameMonth(dateStr, d){ const x=new Date(dateStr+'T00:00:00'); return x.getFullYear()===d.getFullYear() && x.getMonth()===d.getMonth(); }
+
+/* =========================================================
+   TABLA DE MOVIMIENTOS (reutilizable)
+========================================================= */
+function typeBadge(t){
+  const map = {
+    income:['badge-green','Ingreso'], expense:['badge-red','Egreso'], transfer:['badge-gray','Transferencia'],
+    debt_payment:['badge-amber','Pago deuda'], receivable_payment:['badge-green','Cobro'], card_payment:['badge-amber','Pago tarjeta'],
+  };
+  const [cls,label] = map[t.type]||['badge-gray',t.type];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function renderMovementsTable(list, opts){
+  opts = opts||{};
+  if(list.length===0){
+    return `<div class="empty-state">
+      <div class="empty-title">No hay movimientos registrados</div>
+      <div>Comienza registrando tu primer ingreso o egreso.</div>
+      <button class="btn btn-primary" id="empty-add-mov">Registrar movimiento</button>
+    </div>`;
+  }
+  const rows = list.map(t=>{
+    const acctOrCard = t.cardId ? (cardName(t.cardId)+' (crédito)') : (accountName(t.accountId) || accountName(t.toAccountId) || '—');
+    const amountClass = (t.type==='income'||t.type==='receivable_payment') ? 'pos' : (t.type==='expense'||t.type==='debt_payment'||t.type==='card_payment') ? 'neg' : '';
+    const sign = (t.type==='income'||t.type==='receivable_payment') ? '+' : (t.type==='expense'||t.type==='debt_payment'||t.type==='card_payment') ? '-' : '';
+    return `<tr data-id="${t.id}">
+      <td>${fmtDate(t.date)}</td>
+      <td>${typeBadge(t)}</td>
+      <td>${esc(t.conceptId ? conceptName(t.conceptId) : (t.note||'—'))}</td>
+      <td>${t.categoryId ? esc(categoryName(t.categoryId, t.type==='income'?'income':'expense')) : '—'}</td>
+      <td>${esc(acctOrCard)}</td>
+      <td class="${amountClass}" style="font-weight:600;">${sign}${fmt(t.amount)}</td>
+      <td><span class="badge badge-gray">${STATUS_LABELS[t.status]||t.status}</span></td>
+      ${opts.compact ? '' : `<td class="row-actions">
+        <button class="icon-btn act-edit" title="Editar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+        <button class="icon-btn act-del" title="Eliminar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+      </td>`}
+    </tr>`;
+  }).join('');
+  return `<table>
+    <thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Categoría</th><th>Cuenta / Tarjeta</th><th>Monto</th><th>Estado</th>${opts.compact?'':'<th></th>'}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+function attachRowActions(root){
+  const addBtn = root.querySelector('#empty-add-mov') || root.querySelector('#btn-new-movement-inline');
+  if(addBtn) addBtn.addEventListener('click', openNewMovementChoice);
+  root.querySelectorAll('.act-edit').forEach(b=> b.addEventListener('click', e=>{
+    const id = e.target.closest('tr').dataset.id;
+    const t = DATA.transactions.find(x=>x.id===id);
+    if(t) openMovementForm(t.type, t);
+  }));
+  root.querySelectorAll('.act-del').forEach(b=> b.addEventListener('click', e=>{
+    const id = e.target.closest('tr').dataset.id;
+    confirmDialog('Eliminar movimiento', '¿Deseas eliminar este movimiento? Esta acción no se puede deshacer.', async ()=>{
+      DATA.transactions = DATA.transactions.filter(x=>x.id!==id);
+      await persist(); toast('Movimiento eliminado correctamente.'); navigate();
+    });
+  }));
+}
+
+/* =========================================================
+   VISTA: MOVIMIENTOS
+========================================================= */
+function renderMovements(root){
+  const f = movementsFilter;
+  let list = [...DATA.transactions];
+  if(f.type!=='all') list = list.filter(t=>t.type===f.type);
+  if(f.account!=='all') list = list.filter(t=>t.accountId===f.account || t.toAccountId===f.account || t.cardId===f.account);
+  if(f.search){
+    const s = f.search.toLowerCase();
+    list = list.filter(t=>{
+      const hay = [
+        t.conceptId?conceptName(t.conceptId):'', t.note||'', t.contactId?contactName(t.contactId):'',
+        accountName(t.accountId)||'', cardName(t.cardId)||''
+      ].join(' ').toLowerCase();
+      return hay.includes(s);
+    });
+  }
+  list.sort((a,b)=>{
+    let r=0;
+    if(f.sortBy==='date') r = a.date.localeCompare(b.date);
+    else if(f.sortBy==='amount') r = a.amount-b.amount;
+    return f.sortDir==='asc'?r:-r;
+  });
+
+  const allCategories = [...DATA.categories.income, ...DATA.categories.expense];
+
+  root.innerHTML = `
+    <div class="filters-bar">
+      <div class="field">
+        <label>Tipo</label>
+        <select id="f-type">
+          <option value="all">Todos</option>
+          <option value="income">Ingresos</option>
+          <option value="expense">Egresos</option>
+          <option value="transfer">Transferencias</option>
+          <option value="debt_payment">Pagos de deuda</option>
+          <option value="receivable_payment">Cobros</option>
+          <option value="card_payment">Pagos de tarjeta</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Cuenta / Tarjeta</label>
+        <select id="f-account">
+          <option value="all">Todas</option>
+          ${DATA.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}
+          ${DATA.cards.map(c=>`<option value="${c.id}">${esc(c.name)} (tarjeta)</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" style="flex:1;min-width:200px;">
+        <label>Buscar</label>
+        <input type="text" id="f-search" placeholder="Concepto, nota, persona..." value="${esc(f.search)}">
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button class="btn btn-secondary" id="export-csv-mov">Exportar CSV</button>
+      </div>
+    </div>
+    <div class="card">
+      ${renderMovementsTable(list)}
+    </div>
+  `;
+  document.getElementById('f-type').value = f.type;
+  document.getElementById('f-account').value = f.account;
+  document.getElementById('f-type').addEventListener('change', e=>{ movementsFilter.type=e.target.value; renderMovements(root); });
+  document.getElementById('f-account').addEventListener('change', e=>{ movementsFilter.account=e.target.value; renderMovements(root); });
+  document.getElementById('f-search').addEventListener('input', e=>{ movementsFilter.search=e.target.value; renderMovements(root); });
+  document.getElementById('export-csv-mov').addEventListener('click', ()=> exportCSV(list, 'movimientos'));
+  root.querySelectorAll('th').forEach((th,idx)=>{
+    const keys = ['date',null,null,null,null,'amount',null];
+    if(keys[idx]){
+      th.addEventListener('click', ()=>{
+        if(movementsFilter.sortBy===keys[idx]) movementsFilter.sortDir = movementsFilter.sortDir==='asc'?'desc':'asc';
+        else { movementsFilter.sortBy=keys[idx]; movementsFilter.sortDir='desc'; }
+        renderMovements(root);
+      });
+    }
+  });
+  attachRowActions(root);
+}
+
+/* =========================================================
+   EXPORTAR CSV
+========================================================= */
+function exportCSV(list, filename){
+  const headers = ['Fecha','Tipo','Concepto','Categoría','Cuenta','Monto','Estado','Nota'];
+  const typeLabels = {income:'Ingreso',expense:'Egreso',transfer:'Transferencia',debt_payment:'Pago deuda',receivable_payment:'Cobro',card_payment:'Pago tarjeta'};
+  const rows = list.map(t=>[
+    fmtDate(t.date), typeLabels[t.type]||t.type,
+    t.conceptId?conceptName(t.conceptId):'', t.categoryId?categoryName(t.categoryId, t.type==='income'?'income':'expense'):'',
+    t.cardId?cardName(t.cardId):(accountName(t.accountId)||accountName(t.toAccountId)||''),
+    t.amount.toFixed(2), STATUS_LABELS[t.status]||t.status, (t.note||'').replace(/[\r\n]+/g,' ')
+  ]);
+  const csvContent = [headers, ...rows].map(r=> r.map(v=>{
+    v = String(v==null?'':v);
+    if(v.includes(',')||v.includes('"')||v.includes('\n')) v = '"'+v.replace(/"/g,'""')+'"';
+    return v;
+  }).join(',')).join('\r\n');
+  const blob = new Blob(['\ufeff'+csvContent], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${filename}_${todayStr()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Archivo CSV generado correctamente.');
+}
+
+/* =========================================================
+   VISTA: CUENTAS
+========================================================= */
+function renderAccounts(root){
+  root.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="btn btn-primary" id="add-account">+ Nueva cuenta</button>
+    </div>
+    <div id="accounts-grid" class="grid grid-4"></div>
+  `;
+  const grid = document.getElementById('accounts-grid');
+  if(DATA.accounts.length===0){
+    grid.innerHTML = `<div class="card empty-state" style="grid-column:1/-1;">
+      <div class="empty-title">No hay cuentas registradas</div>
+      <div>Agrega tu primera cuenta bancaria, de ahorro o efectivo.</div>
+      <button class="btn btn-primary" id="empty-add-account">Nueva cuenta</button>
+    </div>`;
+    document.getElementById('empty-add-account').addEventListener('click', ()=>openAccountForm());
+  } else {
+    grid.innerHTML = DATA.accounts.map(a=>{
+      const bal = accountBalance(a.id);
+      const typeLabels = {cash:'Efectivo', bank:'Cuenta bancaria', savings:'Cuenta de ahorro', investment:'Cuenta de inversión', other:'Otra'};
+      return `<div class="acct-card" data-id="${a.id}">
+        <div class="acct-name">${esc(a.name)}</div>
+        <div class="acct-type">${typeLabels[a.type]||a.type} · ${a.currency}</div>
+        <div class="acct-balance ${bal<0?'neg':''}">${fmt(bal)}</div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn btn-secondary btn-sm act-edit-acc">Editar</button>
+          <button class="btn btn-danger btn-sm act-del-acc">Eliminar</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('add-account').addEventListener('click', ()=>openAccountForm());
+  grid.querySelectorAll('.act-edit-acc').forEach(b=>b.addEventListener('click', e=>{
+    const id = e.target.closest('.acct-card').dataset.id;
+    openAccountForm(DATA.accounts.find(a=>a.id===id));
+  }));
+  grid.querySelectorAll('.act-del-acc').forEach(b=>b.addEventListener('click', e=>{
+    const id = e.target.closest('.acct-card').dataset.id;
+    const used = DATA.transactions.some(t=>t.accountId===id||t.toAccountId===id);
+    confirmDialog('Eliminar cuenta', used?'Esta cuenta tiene movimientos asociados. Si la eliminas, esos movimientos conservarán la referencia pero la cuenta desaparecerá de los listados. ¿Continuar?':'¿Deseas eliminar esta cuenta?', async ()=>{
+      DATA.accounts = DATA.accounts.filter(a=>a.id!==id);
+      await persist(); toast('Cuenta eliminada correctamente.'); renderAccounts(root);
+    });
+  }));
+}
+function openAccountForm(existing){
+  const isEdit = !!existing;
+  openModal(isEdit?'Editar cuenta':'Nueva cuenta', `
+    <div class="field"><label>Nombre</label><input type="text" id="m-name" value="${esc(existing?.name||'')}" placeholder="Ej. Cuenta BBVA"></div>
+    <div class="field"><label>Tipo</label>
+      <select id="m-type">
+        ${[['cash','Efectivo'],['bank','Cuenta bancaria'],['savings','Cuenta de ahorro'],['investment','Cuenta de inversión'],['other','Otra']]
+          .map(([v,l])=>`<option value="${v}" ${existing?.type===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label>Saldo inicial</label><input type="number" id="m-balance" step="0.01" value="${existing?.initialBalance ?? 0}"></div>
+  `, async ()=>{
+    const name = document.getElementById('m-name').value.trim();
+    if(!name){ toast('El nombre de la cuenta es obligatorio.'); return false; }
+    const type = document.getElementById('m-type').value;
+    const bal = parseFloat(document.getElementById('m-balance').value)||0;
+    if(existing){ existing.name=name; existing.type=type; existing.initialBalance=bal; }
+    else DATA.accounts.push({id:uid(), name, type, initialBalance:bal, currency:'MXN', status:'active'});
+    await persist(); toast('Cuenta guardada correctamente.'); navigate();
+    return true;
+  });
+}
+
+/* =========================================================
+   VISTA: TARJETAS
+========================================================= */
+function renderCards(root){
+  root.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="btn btn-primary" id="add-card">+ Nueva tarjeta</button>
+    </div>
+    <div id="cards-grid" class="grid grid-4"></div>
+  `;
+  const grid = document.getElementById('cards-grid');
+  if(DATA.cards.length===0){
+    grid.innerHTML = `<div class="card empty-state" style="grid-column:1/-1;">
+      <div class="empty-title">No hay tarjetas registradas</div>
+      <div>Agrega tus tarjetas de crédito para separar gastos y pagos.</div>
+      <button class="btn btn-primary" id="empty-add-card">Nueva tarjeta</button>
+    </div>`;
+    document.getElementById('empty-add-card').addEventListener('click', ()=>openCardForm());
+  } else {
+    grid.innerHTML = DATA.cards.map(c=>{
+      const used = cardUsed(c.id);
+      const available = c.limit - used;
+      return `<div class="acct-card" data-id="${c.id}">
+        <div class="acct-name">${esc(c.name)}</div>
+        <div class="acct-type">${esc(c.institution||'')}</div>
+        <div class="acct-balance neg">${fmt(used)} <span style="font-size:12px;color:var(--text-muted);font-weight:500;">usado</span></div>
+        <div class="stat-sub">Disponible: ${fmt(available)} de ${fmt(c.limit)}</div>
+        <div class="stat-sub">Corte día ${c.cutoffDate} · Límite de pago día ${c.dueDate}</div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm act-pay-card">Registrar pago</button>
+          <button class="btn btn-secondary btn-sm act-edit-card">Editar</button>
+          <button class="btn btn-danger btn-sm act-del-card">Eliminar</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('add-card').addEventListener('click', ()=>openCardForm());
+  grid.querySelectorAll('.act-edit-card').forEach(b=>b.addEventListener('click', e=>{
+    openCardForm(DATA.cards.find(c=>c.id===e.target.closest('.acct-card').dataset.id));
+  }));
+  grid.querySelectorAll('.act-del-card').forEach(b=>b.addEventListener('click', e=>{
+    const id = e.target.closest('.acct-card').dataset.id;
+    confirmDialog('Eliminar tarjeta','¿Deseas eliminar esta tarjeta?', async ()=>{
+      DATA.cards = DATA.cards.filter(c=>c.id!==id); await persist(); toast('Tarjeta eliminada correctamente.'); renderCards(root);
+    });
+  }));
+  grid.querySelectorAll('.act-pay-card').forEach(b=>b.addEventListener('click', e=>{
+    openCardPaymentForm(DATA.cards.find(c=>c.id===e.target.closest('.acct-card').dataset.id));
+  }));
+}
+function openCardForm(existing){
+  openModal(existing?'Editar tarjeta':'Nueva tarjeta', `
+    <div class="field"><label>Nombre de la tarjeta</label><input type="text" id="m-name" value="${esc(existing?.name||'')}" placeholder="Ej. Tarjeta Oro"></div>
+    <div class="field"><label>Institución bancaria</label><input type="text" id="m-inst" value="${esc(existing?.institution||'')}"></div>
+    <div class="field-row">
+      <div class="field"><label>Límite de crédito</label><input type="number" id="m-limit" step="0.01" value="${existing?.limit??0}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Día de corte</label><input type="number" min="1" max="31" id="m-cut" value="${existing?.cutoffDate??1}"></div>
+      <div class="field"><label>Día límite de pago</label><input type="number" min="1" max="31" id="m-due" value="${existing?.dueDate??1}"></div>
+    </div>
+  `, async ()=>{
+    const name = document.getElementById('m-name').value.trim();
+    if(!name){ toast('El nombre de la tarjeta es obligatorio.'); return false; }
+    const institution = document.getElementById('m-inst').value.trim();
+    const limit = parseFloat(document.getElementById('m-limit').value)||0;
+    const cutoffDate = parseInt(document.getElementById('m-cut').value)||1;
+    const dueDate = parseInt(document.getElementById('m-due').value)||1;
+    if(existing){ Object.assign(existing,{name,institution,limit,cutoffDate,dueDate}); }
+    else DATA.cards.push({id:uid(), name, institution, limit, cutoffDate, dueDate});
+    await persist(); toast('Tarjeta guardada correctamente.'); navigate();
+    return true;
+  });
+}
+function openCardPaymentForm(card){
+  if(DATA.accounts.length===0){ toast('Registra primero una cuenta desde la cual pagar la tarjeta.'); return; }
+  openModal('Registrar pago de tarjeta', `
+    <div class="field"><label>Monto a pagar</label><input type="number" id="m-amount" step="0.01" placeholder="0.00"></div>
+    <div class="field"><label>Fecha</label><input type="date" id="m-date" value="${todayStr()}"></div>
+    <div class="field"><label>Cuenta de origen</label>
+      <select id="m-account">${DATA.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select>
+    </div>
+  `, async ()=>{
+    const amount = parseFloat(document.getElementById('m-amount').value);
+    if(!amount || amount<=0){ toast('Ingresa un monto válido.'); return false; }
+    const used = cardUsed(card.id);
+    if(amount>used){ toast('El pago no puede exceder el saldo utilizado de la tarjeta.'); return false; }
+    DATA.transactions.push({id:uid(), type:'card_payment', amount, date:document.getElementById('m-date').value,
+      accountId:document.getElementById('m-account').value, cardId:card.id, status:'completed', note:'Pago de tarjeta', createdAt:new Date().toISOString()});
+    await persist(); toast('Pago de tarjeta registrado correctamente.'); navigate();
+    return true;
+  });
+}
+
+/* =========================================================
+   VISTA: DEUDAS
+========================================================= */
+let debtsTab = 'debo';
+function renderDebts(root){
+  root.innerHTML = `
+    <div class="tabs">
+      <div class="tab ${debtsTab==='debo'?'active':''}" data-tab="debo">Debo</div>
+      <div class="tab ${debtsTab==='cobrar'?'active':''}" data-tab="cobrar">Por cobrar</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="btn btn-primary" id="add-debt">${debtsTab==='debo'?'+ Nueva deuda':'+ Nuevo cobro'}</button>
+    </div>
+    <div id="debts-content"></div>
+  `;
+  root.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{ debtsTab=t.dataset.tab; renderDebts(root); }));
+  document.getElementById('add-debt').addEventListener('click', ()=> debtsTab==='debo'?openDebtForm():openReceivableForm());
+
+  const box = document.getElementById('debts-content');
+  if(debtsTab==='debo'){
+    if(DATA.debts.length===0){
+      box.innerHTML = `<div class="card empty-state"><div class="empty-title">No tienes deudas registradas</div><div>Registra dinero que debes a personas, bancos o instituciones.</div></div>`;
+      return;
+    }
+    box.innerHTML = `<div class="card"><table>
+      <thead><tr><th>Acreedor</th><th>Monto original</th><th>Saldo pendiente</th><th>Vencimiento</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${DATA.debts.map(d=>{
+        const statusMap = {pendiente:['badge-amber','Pendiente'], en_proceso:['badge-amber','En proceso'], vencida:['badge-red','Vencida'], pagada:['badge-green','Pagada']};
+        const [cls,label] = statusMap[d.status]||['badge-gray',d.status];
+        return `<tr data-id="${d.id}">
+          <td>${esc(d.creditorName)}</td><td>${fmt(d.originalAmount)}</td><td class="neg" style="font-weight:600;">${fmt(d.balance)}</td>
+          <td>${fmtDate(d.dueDate)}</td><td><span class="badge ${cls}">${label}</span></td>
+          <td class="row-actions">
+            <button class="btn btn-secondary btn-sm act-pay-debt">Registrar pago</button>
+            <button class="icon-btn act-edit-debt" title="Editar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+            <button class="icon-btn act-del-debt" title="Eliminar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+    box.querySelectorAll('.act-pay-debt').forEach(b=>b.addEventListener('click', e=> openDebtPaymentForm(DATA.debts.find(d=>d.id===e.target.closest('tr').dataset.id))));
+    box.querySelectorAll('.act-edit-debt').forEach(b=>b.addEventListener('click', e=> openDebtForm(DATA.debts.find(d=>d.id===e.target.closest('tr').dataset.id))));
+    box.querySelectorAll('.act-del-debt').forEach(b=>b.addEventListener('click', e=>{
+      const id=e.target.closest('tr').dataset.id;
+      confirmDialog('Eliminar deuda','¿Deseas eliminar esta deuda?', async ()=>{ DATA.debts=DATA.debts.filter(d=>d.id!==id); await persist(); toast('Deuda eliminada correctamente.'); renderDebts(root); });
+    }));
+  } else {
+    if(DATA.receivables.length===0){
+      box.innerHTML = `<div class="card empty-state"><div class="empty-title">No tienes cobros pendientes</div><div>Registra dinero que otras personas te deben.</div></div>`;
+      return;
+    }
+    box.innerHTML = `<div class="card"><table>
+      <thead><tr><th>Persona</th><th>Concepto</th><th>Monto</th><th>Recibido</th><th>Saldo pendiente</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${DATA.receivables.map(r=>{
+        const pend = r.amount-(r.received||0);
+        const statusMap = {pendiente:['badge-amber','Pendiente'], parcial:['badge-amber','Parcial'], cobrado:['badge-green','Cobrado'], vencido:['badge-red','Vencido']};
+        const [cls,label] = statusMap[r.status]||['badge-gray',r.status];
+        return `<tr data-id="${r.id}">
+          <td>${esc(r.personName)}</td><td>${esc(r.concept||'—')}</td><td>${fmt(r.amount)}</td><td class="pos">${fmt(r.received||0)}</td>
+          <td style="font-weight:600;">${fmt(pend)}</td><td><span class="badge ${cls}">${label}</span></td>
+          <td class="row-actions">
+            <button class="btn btn-secondary btn-sm act-collect">Registrar cobro</button>
+            <button class="icon-btn act-edit-rec" title="Editar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+            <button class="icon-btn act-del-rec" title="Eliminar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+    box.querySelectorAll('.act-collect').forEach(b=>b.addEventListener('click', e=> openCollectForm(DATA.receivables.find(r=>r.id===e.target.closest('tr').dataset.id))));
+    box.querySelectorAll('.act-edit-rec').forEach(b=>b.addEventListener('click', e=> openReceivableForm(DATA.receivables.find(r=>r.id===e.target.closest('tr').dataset.id))));
+    box.querySelectorAll('.act-del-rec').forEach(b=>b.addEventListener('click', e=>{
+      const id=e.target.closest('tr').dataset.id;
+      confirmDialog('Eliminar registro','¿Deseas eliminar este cobro pendiente?', async ()=>{ DATA.receivables=DATA.receivables.filter(r=>r.id!==id); await persist(); toast('Registro eliminado correctamente.'); renderDebts(root); });
+    }));
+  }
+}
+function openDebtForm(existing){
+  openModal(existing?'Editar deuda':'Nueva deuda', `
+    <div class="field"><label>Acreedor (persona, banco o institución)</label><input type="text" id="m-creditor" value="${esc(existing?.creditorName||'')}"></div>
+    <div class="field-row">
+      <div class="field"><label>Monto original</label><input type="number" step="0.01" id="m-orig" value="${existing?.originalAmount??''}"></div>
+      <div class="field"><label>Saldo pendiente</label><input type="number" step="0.01" id="m-bal" value="${existing?.balance ?? existing?.originalAmount ?? ''}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Fecha de inicio</label><input type="date" id="m-start" value="${existing?.startDate||todayStr()}"></div>
+      <div class="field"><label>Fecha de vencimiento</label><input type="date" id="m-due" value="${existing?.dueDate||''}"></div>
+    </div>
+    <div class="field"><label>Estado</label>
+      <select id="m-status">${[['pendiente','Pendiente'],['en_proceso','En proceso'],['vencida','Vencida'],['pagada','Pagada']].map(([v,l])=>`<option value="${v}" ${existing?.status===v?'selected':''}>${l}</option>`).join('')}</select>
+    </div>
+    <div class="field"><label>Notas</label><textarea id="m-notes" rows="2">${esc(existing?.notes||'')}</textarea></div>
+  `, async ()=>{
+    const creditorName = document.getElementById('m-creditor').value.trim();
+    if(!creditorName){ toast('El acreedor es obligatorio.'); return false; }
+    const originalAmount = parseFloat(document.getElementById('m-orig').value)||0;
+    const balance = parseFloat(document.getElementById('m-bal').value)||0;
+    const startDate = document.getElementById('m-start').value;
+    const dueDate = document.getElementById('m-due').value;
+    const status = document.getElementById('m-status').value;
+    const notes = document.getElementById('m-notes').value.trim();
+    if(existing) Object.assign(existing, {creditorName, originalAmount, balance, startDate, dueDate, status, notes});
+    else DATA.debts.push({id:uid(), creditorName, originalAmount, balance, startDate, dueDate, status, notes, payments:[], interest:0});
+    await persist(); toast('Deuda guardada correctamente.'); navigate();
+    return true;
+  });
+}
+function openDebtPaymentForm(debt){
+  if(DATA.accounts.length===0){ toast('Registra primero una cuenta desde la cual pagar.'); return; }
+  openModal('Registrar pago de deuda', `
+    <div class="field"><label>Monto</label><input type="number" step="0.01" id="m-amount"></div>
+    <div class="field"><label>Fecha</label><input type="date" id="m-date" value="${todayStr()}"></div>
+    <div class="field"><label>Cuenta de origen</label><select id="m-account">${DATA.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div>
+  `, async ()=>{
+    const amount = parseFloat(document.getElementById('m-amount').value);
+    if(!amount||amount<=0){ toast('Ingresa un monto válido.'); return false; }
+    if(amount>debt.balance){ toast('El pago no puede exceder el saldo pendiente de la deuda.'); return false; }
+    debt.balance -= amount;
+    debt.payments = debt.payments||[]; debt.payments.push({date:document.getElementById('m-date').value, amount});
+    if(debt.balance<=0.005){ debt.balance=0; debt.status='pagada'; }
+    DATA.transactions.push({id:uid(), type:'debt_payment', amount, date:document.getElementById('m-date').value,
+      accountId:document.getElementById('m-account').value, status:'completed', note:`Pago a ${debt.creditorName}`, createdAt:new Date().toISOString()});
+    await persist(); toast('Pago registrado correctamente.'); navigate();
+    return true;
+  });
+}
+function openReceivableForm(existing){
+  openModal(existing?'Editar cobro pendiente':'Nuevo cobro pendiente', `
+    <div class="field"><label>Persona o institución</label><input type="text" id="m-person" value="${esc(existing?.personName||'')}"></div>
+    <div class="field"><label>Concepto</label><input type="text" id="m-concept" value="${esc(existing?.concept||'')}"></div>
+    <div class="field-row">
+      <div class="field"><label>Monto</label><input type="number" step="0.01" id="m-amount" value="${existing?.amount??''}"></div>
+      <div class="field"><label>Recibido</label><input type="number" step="0.01" id="m-received" value="${existing?.received??0}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Fecha</label><input type="date" id="m-date" value="${existing?.date||todayStr()}"></div>
+      <div class="field"><label>Fecha esperada de pago</label><input type="date" id="m-expected" value="${existing?.expectedDate||''}"></div>
+    </div>
+    <div class="field"><label>Nota</label><textarea id="m-note" rows="2">${esc(existing?.note||'')}</textarea></div>
+  `, async ()=>{
+    const personName = document.getElementById('m-person').value.trim();
+    if(!personName){ toast('El nombre de la persona es obligatorio.'); return false; }
+    const amount = parseFloat(document.getElementById('m-amount').value)||0;
+    const received = parseFloat(document.getElementById('m-received').value)||0;
+    const status = received<=0?'pendiente':(received>=amount?'cobrado':'parcial');
+    const payload = {personName, concept:document.getElementById('m-concept').value.trim(), amount, received,
+      date:document.getElementById('m-date').value, expectedDate:document.getElementById('m-expected').value,
+      note:document.getElementById('m-note').value.trim(), status};
+    if(existing) Object.assign(existing, payload);
+    else DATA.receivables.push(Object.assign({id:uid()}, payload));
+    await persist(); toast('Registro guardado correctamente.'); navigate();
+    return true;
+  });
+}
+function openCollectForm(rec){
+  openModal('Registrar cobro', `
+    <div class="field"><label>Monto recibido</label><input type="number" step="0.01" id="m-amount"></div>
+    <div class="field"><label>Fecha</label><input type="date" id="m-date" value="${todayStr()}"></div>
+    <div class="field"><label>Depositar en cuenta</label><select id="m-account"><option value="">— No registrar en cuenta —</option>${DATA.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div>
+  `, async ()=>{
+    const amount = parseFloat(document.getElementById('m-amount').value);
+    const pend = rec.amount-(rec.received||0);
+    if(!amount||amount<=0){ toast('Ingresa un monto válido.'); return false; }
+    if(amount>pend){ toast('El cobro no puede exceder el saldo pendiente.'); return false; }
+    rec.received = (rec.received||0)+amount;
+    rec.status = rec.received>=rec.amount?'cobrado':'parcial';
+    const accId = document.getElementById('m-account').value;
+    if(accId) DATA.transactions.push({id:uid(), type:'receivable_payment', amount, date:document.getElementById('m-date').value,
+      accountId:accId, status:'completed', note:`Cobro de ${rec.personName}`, createdAt:new Date().toISOString()});
+    await persist(); toast('Cobro registrado correctamente.'); navigate();
+    return true;
+  });
+}
+
+/* =========================================================
+   VISTA: CATEGORÍAS Y CONCEPTOS
+========================================================= */
+let catalogTab = 'expense';
+function renderCatalog(root){
+  root.innerHTML = `
+    <div class="tabs">
+      <div class="tab ${catalogTab==='expense'?'active':''}" data-tab="expense">Conceptos de egreso</div>
+      <div class="tab ${catalogTab==='income'?'active':''}" data-tab="income">Conceptos de ingreso</div>
+      <div class="tab ${catalogTab==='categories'?'active':''}" data-tab="categories">Categorías</div>
+      <div class="tab ${catalogTab==='contacts'?'active':''}" data-tab="contacts">Contactos</div>
+    </div>
+    <div id="catalog-content"></div>
+  `;
+  root.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{ catalogTab=t.dataset.tab; renderCatalog(root); }));
+  const box = document.getElementById('catalog-content');
+
+  if(catalogTab==='expense' || catalogTab==='income'){
+    const type = catalogTab;
+    const items = DATA.concepts.filter(c=>c.type===type);
+    box.innerHTML = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+        <button class="btn btn-primary" id="add-concept">+ Nuevo concepto</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Concepto</th><th>Categoría</th><th>Favorito</th><th>Estado</th><th></th></tr></thead>
+          <tbody>${items.map(c=>`
+            <tr data-id="${c.id}">
+              <td>${esc(c.name)}</td>
+              <td>${esc(categoryName(c.categoryId, type))}</td>
+              <td>${c.favorite?'★':'—'}</td>
+              <td><span class="badge ${c.active?'badge-green':'badge-gray'}">${c.active?'Activo':'Inactivo'}</span></td>
+              <td class="row-actions">
+                <button class="icon-btn act-fav" title="Marcar favorito">★</button>
+                <button class="icon-btn act-toggle" title="Activar/Desactivar">⏻</button>
+                <button class="icon-btn act-edit-c" title="Editar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+              </td>
+            </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+    document.getElementById('add-concept').addEventListener('click', ()=>openConceptForm(type));
+    box.querySelectorAll('.act-fav').forEach(b=>b.addEventListener('click', async e=>{
+      const c = DATA.concepts.find(x=>x.id===e.target.closest('tr').dataset.id); c.favorite=!c.favorite; await persist(); renderCatalog(root);
+    }));
+    box.querySelectorAll('.act-toggle').forEach(b=>b.addEventListener('click', async e=>{
+      const c = DATA.concepts.find(x=>x.id===e.target.closest('tr').dataset.id); c.active=!c.active; await persist(); renderCatalog(root);
+    }));
+    box.querySelectorAll('.act-edit-c').forEach(b=>b.addEventListener('click', e=>{
+      openConceptForm(type, DATA.concepts.find(x=>x.id===e.target.closest('tr').dataset.id));
+    }));
+  } else if(catalogTab==='categories'){
+    box.innerHTML = `
+      <div class="grid grid-2">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div class="section-title" style="margin:0;">Categorías de egreso</div>
+            <button class="btn btn-secondary btn-sm" id="add-cat-expense">+ Agregar</button>
+          </div>
+          ${DATA.categories.expense.map(c=>`<div style="padding:7px 0;border-bottom:1px solid var(--border);">${esc(c.name)}</div>`).join('')}
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div class="section-title" style="margin:0;">Categorías de ingreso</div>
+            <button class="btn btn-secondary btn-sm" id="add-cat-income">+ Agregar</button>
+          </div>
+          ${DATA.categories.income.map(c=>`<div style="padding:7px 0;border-bottom:1px solid var(--border);">${esc(c.name)}</div>`).join('')}
+        </div>
+      </div>`;
+    document.getElementById('add-cat-expense').addEventListener('click', ()=>openCategoryForm('expense'));
+    document.getElementById('add-cat-income').addEventListener('click', ()=>openCategoryForm('income'));
+  } else if(catalogTab==='contacts'){
+    box.innerHTML = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+        <button class="btn btn-primary" id="add-contact">+ Nuevo contacto</button>
+      </div>
+      ${DATA.contacts.length===0 ? `<div class="card empty-state"><div class="empty-title">No hay contactos registrados</div><div>Agrega personas, empresas o instituciones frecuentes.</div></div>` : `
+      <div class="card"><table><thead><tr><th>Nombre</th><th>Tipo</th></tr></thead><tbody>
+        ${DATA.contacts.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.type)}</td></tr>`).join('')}
+      </tbody></table></div>`}
+    `;
+    document.getElementById('add-contact').addEventListener('click', ()=>{
+      openModal('Nuevo contacto', `
+        <div class="field"><label>Nombre</label><input type="text" id="m-name"></div>
+        <div class="field"><label>Tipo</label><select id="m-type"><option value="persona">Persona</option><option value="empresa">Empresa</option><option value="institucion">Institución</option></select></div>
+      `, async ()=>{
+        const name = document.getElementById('m-name').value.trim();
+        if(!name){ toast('El nombre es obligatorio.'); return false; }
+        DATA.contacts.push({id:uid(), name, type:document.getElementById('m-type').value});
+        await persist(); toast('Contacto guardado correctamente.'); navigate(); return true;
+      });
+    });
+  }
+}
+function openConceptForm(type, existing){
+  const cats = DATA.categories[type];
+  openModal(existing?'Editar concepto':'Nuevo concepto', `
+    <div class="field"><label>Nombre del concepto</label><input type="text" id="m-name" value="${esc(existing?.name||'')}"></div>
+    <div class="field"><label>Categoría</label><select id="m-cat">${cats.map(c=>`<option value="${c.id}" ${existing?.categoryId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+  `, async ()=>{
+    const name = document.getElementById('m-name').value.trim();
+    if(!name){ toast('El nombre es obligatorio.'); return false; }
+    const categoryId = document.getElementById('m-cat').value;
+    if(existing){ existing.name=name; existing.categoryId=categoryId; }
+    else DATA.concepts.push({id:uid(), name, type, categoryId, favorite:false, active:true, isDefault:false});
+    await persist(); toast('Concepto guardado correctamente.'); navigate(); return true;
+  });
+}
+function openCategoryForm(type){
+  openModal('Nueva categoría', `<div class="field"><label>Nombre</label><input type="text" id="m-name"></div>`, async ()=>{
+    const name = document.getElementById('m-name').value.trim();
+    if(!name){ toast('El nombre es obligatorio.'); return false; }
+    DATA.categories[type].push({id:uid(), name});
+    await persist(); toast('Categoría guardada correctamente.'); navigate(); return true;
+  });
+}
+
+/* =========================================================
+   VISTA: REPORTES
+========================================================= */
+let reportPeriod = 'month';
+function renderReports(root){
+  const p = reportPeriod;
+  const income = sumByType('income',p), expense = sumByType('expense',p);
+  const expByCat = {}; const incByCat = {};
+  DATA.transactions.filter(t=>inPeriod(t.date,p)).forEach(t=>{
+    if(t.type==='expense') expByCat[categoryName(t.categoryId,'expense')] = (expByCat[categoryName(t.categoryId,'expense')]||0)+t.amount;
+    if(t.type==='income') incByCat[categoryName(t.categoryId,'income')] = (incByCat[categoryName(t.categoryId,'income')]||0)+t.amount;
+  });
+  root.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <select id="report-period">
+        ${['month','lastMonth','year','all'].map(k=>`<option value="${k}" ${k===p?'selected':''}>${periodLabel(k)}</option>`).join('')}
+      </select>
+      <button class="btn btn-secondary" id="export-report">Exportar reporte (CSV)</button>
+    </div>
+    <div class="grid grid-4">
+      <div class="card"><div class="stat-label">Ingresos totales</div><div class="stat-value pos">${fmt(income)}</div></div>
+      <div class="card"><div class="stat-label">Egresos totales</div><div class="stat-value neg">${fmt(expense)}</div></div>
+      <div class="card"><div class="stat-label">Balance del período</div><div class="stat-value">${fmt(income-expense)}</div></div>
+      <div class="card"><div class="stat-label">Deudas / Por cobrar</div><div class="stat-value">${fmt(DATA.debts.reduce((s,d)=>s+d.balance,0))} / <span class="pos">${fmt(DATA.receivables.reduce((s,r)=>s+(r.amount-(r.received||0)),0))}</span></div></div>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px;">
+      <div class="card">
+        <div class="section-title">Gastos por categoría</div>
+        <table><thead><tr><th>Categoría</th><th>Monto</th></tr></thead><tbody>
+        ${Object.entries(expByCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="neg">${fmt(v)}</td></tr>`).join('') || '<tr><td colspan="2" style="color:var(--text-muted);">Sin datos</td></tr>'}
+        </tbody></table>
+      </div>
+      <div class="card">
+        <div class="section-title">Ingresos por categoría</div>
+        <table><thead><tr><th>Categoría</th><th>Monto</th></tr></thead><tbody>
+        ${Object.entries(incByCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="pos">${fmt(v)}</td></tr>`).join('') || '<tr><td colspan="2" style="color:var(--text-muted);">Sin datos</td></tr>'}
+        </tbody></table>
+      </div>
+    </div>
+  `;
+  document.getElementById('report-period').addEventListener('change', e=>{ reportPeriod=e.target.value; renderReports(root); });
+  document.getElementById('export-report').addEventListener('click', ()=>{
+    const list = DATA.transactions.filter(t=>inPeriod(t.date, reportPeriod));
+    exportCSV(list, 'reporte_'+reportPeriod);
+  });
+}
+
+/* =========================================================
+   VISTA: CONFIGURACIÓN
+========================================================= */
+function renderSettings(root){
+  root.innerHTML = `
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="section-title">Preferencias</div>
+        <div class="field"><label>Nombre del usuario</label><input type="text" id="s-name" value="${esc(DATA.settings.userName||'')}"></div>
+        <div class="field"><label>Moneda principal</label><select id="s-currency"><option value="MXN" selected>Peso mexicano (MXN)</option></select></div>
+        <button class="btn btn-primary" id="save-settings">Guardar cambios</button>
+      </div>
+      <div class="card">
+        <div class="section-title">Datos y exportación</div>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:0;">Descarga toda la información almacenada en formato CSV.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+          <button class="btn btn-secondary btn-sm" id="export-all">Exportar todos los movimientos</button>
+        </div>
+        <p style="color:var(--text-muted);font-size:13px;">Si aún tienes los datos de demostración cargados, puedes eliminarlos para comenzar con información real.</p>
+        <button class="btn btn-danger btn-sm" id="clear-demo" ${DATA.demoSeeded?'':'disabled'}>Limpiar datos de demostración</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('save-settings').addEventListener('click', async ()=>{
+    DATA.settings.userName = document.getElementById('s-name').value.trim();
+    await persist(); toast('Configuración guardada correctamente.');
+  });
+  document.getElementById('export-all').addEventListener('click', ()=> exportCSV(DATA.transactions, 'todos_los_movimientos'));
+  document.getElementById('clear-demo').addEventListener('click', ()=>{
+    confirmDialog('Limpiar datos de demostración', '¿Deseas eliminar todos los datos de ejemplo? Tus datos reales no se verán afectados.', async ()=>{
+      DATA.accounts = DATA.accounts.filter(a=>!a.isDemo);
+      DATA.cards = DATA.cards.filter(c=>!c.isDemo);
+      DATA.contacts = DATA.contacts.filter(c=>!c.isDemo);
+      DATA.transactions = DATA.transactions.filter(t=>!t.isDemo);
+      DATA.debts = DATA.debts.filter(d=>!d.isDemo);
+      DATA.receivables = DATA.receivables.filter(r=>!r.isDemo);
+      DATA.demoSeeded = false;
+      await persist(); toast('Datos de demostración eliminados.'); navigate();
+    });
+  });
+}
+
+/* =========================================================
+   MODALES GENÉRICOS
+========================================================= */
+function openModal(title, bodyHtml, onSave, opts){
+  opts = opts||{};
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal">
+        <div class="modal-header"><h3>${esc(title)}</h3><button class="icon-btn" id="modal-close">✕</button></div>
+        <div class="modal-body">${bodyHtml}</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="modal-cancel">Cancelar</button>
+          ${opts.hideSave?'':'<button class="btn btn-primary" id="modal-save">Guardar</button>'}
+        </div>
+      </div>
+    </div>`;
+  const close = ()=>{ root.innerHTML=''; };
+  document.getElementById('modal-close').addEventListener('click', close);
+  document.getElementById('modal-cancel').addEventListener('click', close);
+  document.getElementById('modal-overlay').addEventListener('click', e=>{ if(e.target.id==='modal-overlay') close(); });
+  if(!opts.hideSave){
+    document.getElementById('modal-save').addEventListener('click', async ()=>{
+      const ok = await onSave();
+      if(ok!==false) close();
+    });
+  }
+}
+function confirmDialog(title, message, onConfirm){
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-header"><h3>${esc(title)}</h3></div>
+        <div class="modal-body"><p style="margin:0;color:var(--text);">${esc(message)}</p></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="c-cancel">Cancelar</button>
+          <button class="btn btn-danger" id="c-ok">Confirmar</button>
+        </div>
+      </div>
+    </div>`;
+  const close = ()=>{ root.innerHTML=''; };
+  document.getElementById('c-cancel').addEventListener('click', close);
+  document.getElementById('modal-overlay').addEventListener('click', e=>{ if(e.target.id==='modal-overlay') close(); });
+  document.getElementById('c-ok').addEventListener('click', async ()=>{ await onConfirm(); close(); });
+}
+
+/* =========================================================
+   NUEVO MOVIMIENTO (elección de tipo + formularios)
+========================================================= */
+function openNewMovementChoice(){
+  openModal('Nuevo movimiento', `
+    <div class="type-choice">
+      <button data-t="income"><div class="t-title">Nuevo ingreso</div><div class="t-sub">Dinero que recibiste</div></button>
+      <button data-t="expense"><div class="t-title">Nuevo egreso</div><div class="t-sub">Un gasto o pago realizado</div></button>
+      <button data-t="transfer"><div class="t-title">Transferencia</div><div class="t-sub">Mover dinero entre tus cuentas</div></button>
+      <button data-t="debt"><div class="t-title">Nueva deuda</div><div class="t-sub">Dinero que debes</div></button>
+      <button data-t="receivable"><div class="t-title">Nuevo cobro</div><div class="t-sub">Dinero que te deben</div></button>
+    </div>
+  `, null, {hideSave:true});
+  document.querySelectorAll('.type-choice button').forEach(b=>b.addEventListener('click', ()=>{
+    document.getElementById('modal-root').innerHTML='';
+    const t = b.dataset.t;
+    if(t==='debt') openDebtForm();
+    else if(t==='receivable') openReceivableForm();
+    else openMovementForm(t);
+  }));
+}
+function openMovementForm(type, existing){
+  const isEdit = !!existing;
+  if(type==='income' || type==='expense'){
+    if(DATA.accounts.length===0 && !(type==='expense')){ toast('Registra primero una cuenta.'); return; }
+    const concepts = DATA.concepts.filter(c=>c.type===type && c.active);
+    const cats = DATA.categories[type];
+    const paymentMethods = type==='income'
+      ? [['efectivo','Efectivo'],['transferencia','Transferencia'],['deposito','Depósito'],['cheque','Cheque'],['tarjeta_debito','Tarjeta'],['otro','Otro']]
+      : [['efectivo','Efectivo'],['tarjeta_debito','Tarjeta de débito'],['tarjeta_credito','Tarjeta de crédito'],['transferencia','Transferencia'],['cheque','Cheque'],['otro','Otro']];
+    openModal(isEdit?`Editar ${type==='income'?'ingreso':'egreso'}`:(type==='income'?'Registrar ingreso':'Registrar egreso'), `
+      <div class="field-row">
+        <div class="field"><label>Monto</label><input type="number" step="0.01" id="m-amount" value="${existing?.amount??''}" placeholder="0.00"></div>
+        <div class="field"><label>Fecha</label><input type="date" id="m-date" value="${existing?.date||todayStr()}"></div>
+      </div>
+      <div class="field"><label>Concepto</label>
+        <select id="m-concept">
+          <option value="">Otro (escribir abajo)</option>
+          ${concepts.map(c=>`<option value="${c.id}" ${existing?.conceptId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" id="custom-concept-wrap" style="${existing?.conceptId?'display:none;':''}">
+        <label>Concepto personalizado</label><input type="text" id="m-custom-concept" placeholder="Escribe un concepto">
+      </div>
+      <div class="field"><label>Categoría</label><select id="m-category">${cats.map(c=>`<option value="${c.id}" ${existing?.categoryId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+      <div class="field"><label>Método de ${type==='income'?'recepción':'pago'}</label>
+        <select id="m-method">${paymentMethods.map(([v,l])=>`<option value="${v}" ${existing?.paymentMethod===v?'selected':''}>${l}</option>`).join('')}</select>
+      </div>
+      <div class="field" id="account-field"><label>Cuenta</label>
+        <select id="m-account">${DATA.accounts.map(a=>`<option value="${a.id}" ${existing?.accountId===a.id?'selected':''}>${esc(a.name)}</option>`).join('')}</select>
+      </div>
+      ${type==='expense' ? `<div class="field" id="card-field" style="display:none;"><label>Tarjeta de crédito</label>
+        <select id="m-card">${DATA.cards.map(c=>`<option value="${c.id}" ${existing?.cardId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
+      </div>` : ''}
+      <div class="field"><label>Persona o institución relacionada (opcional)</label>
+        <select id="m-contact"><option value="">— Ninguna —</option>${DATA.contacts.map(c=>`<option value="${c.id}" ${existing?.contactId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label>Nota (opcional)</label><textarea id="m-note" rows="2">${esc(existing?.note||'')}</textarea></div>
+    `, async ()=>{
+      const amount = parseFloat(document.getElementById('m-amount').value);
+      if(!amount || amount<=0){ toast('El monto debe ser mayor a cero.'); return false; }
+      const date = document.getElementById('m-date').value;
+      if(!date){ toast('La fecha es obligatoria.'); return false; }
+      let conceptId = document.getElementById('m-concept').value;
+      const customName = document.getElementById('m-custom-concept')?.value.trim();
+      const categoryId = document.getElementById('m-category').value;
+      if(!conceptId){
+        if(!customName){ toast('Escribe un concepto o selecciona uno existente.'); return false; }
+        const newC = {id:uid(), name:customName, type, categoryId, favorite:false, active:true, isDefault:false};
+        DATA.concepts.push(newC); conceptId = newC.id;
+      }
+      const method = document.getElementById('m-method').value;
+      const isCredit = type==='expense' && method==='tarjeta_credito';
+      const accountId = isCredit ? null : document.getElementById('m-account').value;
+      const cardId = isCredit ? document.getElementById('m-card').value : null;
+      if(isCredit && !cardId){ toast('Registra primero una tarjeta de crédito.'); return false; }
+      if(!isCredit && !accountId){ toast('Registra primero una cuenta.'); return false; }
+      const contactId = document.getElementById('m-contact').value || null;
+      const note = document.getElementById('m-note').value.trim();
+      const payload = {type, amount, date, conceptId, categoryId, paymentMethod:method, accountId, cardId, contactId, note, status:'completed'};
+      if(existing) Object.assign(existing, payload);
+      else DATA.transactions.push(Object.assign({id:uid(), createdAt:new Date().toISOString()}, payload));
+      await persist(); toast('Movimiento registrado correctamente.'); navigate();
+      return true;
+    });
+    document.getElementById('m-concept').addEventListener('change', e=>{
+      document.getElementById('custom-concept-wrap').style.display = e.target.value ? 'none':'block';
+    });
+    if(type==='expense'){
+      const methodSel = document.getElementById('m-method');
+      const toggleFields = ()=>{
+        const credit = methodSel.value==='tarjeta_credito';
+        document.getElementById('account-field').style.display = credit?'none':'block';
+        document.getElementById('card-field').style.display = credit?'block':'none';
+      };
+      methodSel.addEventListener('change', toggleFields); toggleFields();
+    }
+  } else if(type==='transfer'){
+    if(DATA.accounts.length<2){ toast('Necesitas al menos dos cuentas para hacer una transferencia.'); return; }
+    openModal('Nueva transferencia', `
+      <div class="field-row">
+        <div class="field"><label>Monto</label><input type="number" step="0.01" id="m-amount"></div>
+        <div class="field"><label>Fecha</label><input type="date" id="m-date" value="${todayStr()}"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Cuenta origen</label><select id="m-from">${DATA.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>Cuenta destino</label><select id="m-to">${DATA.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label>Nota (opcional)</label><textarea id="m-note" rows="2"></textarea></div>
+    `, async ()=>{
+      const amount = parseFloat(document.getElementById('m-amount').value);
+      if(!amount||amount<=0){ toast('El monto debe ser mayor a cero.'); return false; }
+      const from = document.getElementById('m-from').value, to = document.getElementById('m-to').value;
+      if(from===to){ toast('La cuenta de origen y destino deben ser diferentes.'); return false; }
+      DATA.transactions.push({id:uid(), type:'transfer', amount, date:document.getElementById('m-date').value,
+        accountId:from, toAccountId:to, status:'completed', note:document.getElementById('m-note').value.trim(), createdAt:new Date().toISOString()});
+      await persist(); toast('Transferencia registrada correctamente.'); navigate();
+      return true;
+    });
+  }
+}
+
+/* =========================================================
+   INICIALIZACIÓN
+========================================================= */
+async function init(){
+  await loadData();
+  renderNav();
+  // Los controles principales se conectan antes de dibujar cualquier vista,
+  // para que sigan funcionando aunque el dibujado de una sección falle.
+  document.getElementById('btn-new-movement').addEventListener('click', openNewMovementChoice);
+  document.getElementById('global-search').addEventListener('keydown', e=>{
+    if(e.key==='Enter'){
+      movementsFilter.search = e.target.value;
+      currentView = 'movements'; navigate();
+    }
+  });
+  navigate();
+}
+init().catch(err=>{
+  console.error('Error al iniciar la aplicación', err);
+  document.getElementById('content').innerHTML = `<div class="card empty-state"><div class="empty-title">No se pudo iniciar la aplicación</div><div>Recarga la página para intentarlo de nuevo.</div></div>`;
+});
+</script>
+</body>
+</html>
