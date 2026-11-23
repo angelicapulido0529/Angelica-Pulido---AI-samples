@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models.dart';
 import '../services/auth_service.dart';
-import '../services/push_service.dart';
+import '../services/background_service.dart';
 import '../services/widget_service.dart';
 import '../theme.dart';
 import '../widgets/avatar.dart';
@@ -21,7 +21,7 @@ void showSettingsSheet(BuildContext context, Profile me) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Avatar(url: me.photoUrl, name: me.name, size: 72),
+            Avatar(photo: me.photo, name: me.name, size: 72),
             const SizedBox(height: 8),
             Text(me.name, style: const TextStyle(fontSize: 22)),
             const SizedBox(height: 12),
@@ -57,7 +57,7 @@ void showSettingsSheet(BuildContext context, Profile me) {
               title: const Text('Cerrar sesión'),
               onTap: () async {
                 Navigator.pop(sheet);
-                await PushService.unregister(me.uid);
+                await BackgroundService.stop();
                 await WidgetService.clear();
                 await AuthService.signOut();
               },

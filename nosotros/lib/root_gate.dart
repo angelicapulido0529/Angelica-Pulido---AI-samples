@@ -9,7 +9,7 @@ import 'screens/pair_screen.dart';
 import 'screens/profile_setup_screen.dart';
 import 'services/auth_service.dart';
 import 'services/couple_service.dart';
-import 'services/push_service.dart';
+import 'services/background_service.dart';
 import 'theme.dart';
 
 /// Decide qué pantalla mostrar:
@@ -44,7 +44,7 @@ class _ProfileGate extends StatefulWidget {
 
 class _ProfileGateState extends State<_ProfileGate> {
   late final Stream<DocumentSnapshot<Map<String, dynamic>>> _me;
-  bool _pushRegistered = false;
+  bool _backgroundStarted = false;
 
   @override
   void initState() {
@@ -68,9 +68,11 @@ class _ProfileGateState extends State<_ProfileGate> {
           return const ProfileSetupScreen();
         }
         final me = Profile.fromDoc(doc);
-        if (!_pushRegistered) {
-          _pushRegistered = true;
-          PushService.register(me.uid);
+        if (!_backgroundStarted && me.coupleId != null) {
+          _backgroundStarted = true;
+          LocalNotifications.requestPermission()
+              .then((_) => BackgroundService.start())
+              .catchError((_) {});
         }
         if (me.coupleId == null) return const PairScreen();
         return _CoupleGate(key: ValueKey(me.coupleId), me: me);

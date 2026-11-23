@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:home_widget/home_widget.dart';
-import 'package:http/http.dart' as http;
 
 import '../models.dart';
 
@@ -9,6 +8,9 @@ import '../models.dart';
 /// una mitad (la tuya o la de tu pareja).
 class WidgetSide {
   WidgetSide({required this.profile, this.story, this.file});
+
+  static Future<String?> savedStoryId(String side) =>
+      HomeWidget.getWidgetData<String>('${side}_story');
   final Profile profile;
   final Story? story;
   final File? file;
@@ -55,18 +57,15 @@ class WidgetService {
   static Future<void> _side(String side, WidgetSide data) async {
     await HomeWidget.saveWidgetData<String>('${side}_name', data.profile.name);
 
-    // Foto de perfil: solo se descarga cuando cambia.
-    final url = data.profile.photoUrl;
-    final savedUrl = await HomeWidget.getWidgetData<String>('${side}_avatar_url');
-    if (url != null && url != savedUrl) {
-      try {
-        final res = await http.get(Uri.parse(url));
-        if (res.statusCode == 200) {
-          await HomeWidget.saveFile('${side}_avatar', res.bodyBytes,
-              extension: 'jpg');
-          await HomeWidget.saveWidgetData<String>('${side}_avatar_url', url);
-        }
-      } catch (_) {}
+    // Foto de perfil: solo se vuelve a guardar cuando cambia.
+    final photo = data.profile.photo;
+    if (photo != null) {
+      final sig = '${photo.length}-${Object.hashAll(photo.take(512))}';
+      final saved = await HomeWidget.getWidgetData<String>('${side}_avatar_sig');
+      if (sig != saved) {
+        await HomeWidget.saveFile('${side}_avatar', photo, extension: 'jpg');
+        await HomeWidget.saveWidgetData<String>('${side}_avatar_sig', sig);
+      }
     }
 
     final story = data.story;

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models.dart';
@@ -22,22 +21,14 @@ class StoryCache {
   static Future<File> _fileFor(String ownerUid, String storyId) async =>
       File('${(await _root()).path}/${ownerUid}_$storyId.jpg');
 
-  /// Devuelve la foto guardada, o la descarga si hay internet.
-  /// Devuelve null si no hay copia local y no se pudo descargar.
-  static Future<File?> fileFor(Story story) async {
+  /// Devuelve la foto de la story como archivo en el teléfono
+  /// (para verla sin internet y para el widget).
+  static Future<File> fileFor(Story story) async {
     final file = await _fileFor(story.ownerUid, story.storyId);
     if (await file.exists() && await file.length() > 0) return file;
-    try {
-      final bytes = await FirebaseStorage.instance
-          .ref(story.imagePath)
-          .getData(15 * 1024 * 1024);
-      if (bytes == null) return null;
-      await _purge(story.ownerUid, keep: story.storyId);
-      await file.writeAsBytes(bytes, flush: true);
-      return file;
-    } catch (_) {
-      return null; // Sin internet: se intentará después.
-    }
+    await _purge(story.ownerUid, keep: story.storyId);
+    await file.writeAsBytes(story.image, flush: true);
+    return file;
   }
 
   /// Guarda la foto propia al subirla, para no tener que descargarla.

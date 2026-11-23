@@ -40,6 +40,8 @@ class _ComposeScreenState extends State<ComposeScreen> {
       if (mounted) Navigator.of(context).pop();
     } on NoInternetException catch (e) {
       if (mounted) showMessage(context, e.toString());
+    } on PhotoTooBigException catch (e) {
+      if (mounted) showMessage(context, e.toString());
     } catch (_) {
       if (mounted) showMessage(context, 'No se pudo subir. Intenta de nuevo.');
     } finally {

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Perfil de una de las dos personas.
@@ -5,13 +7,14 @@ class Profile {
   Profile({
     required this.uid,
     required this.name,
-    this.photoUrl,
+    this.photo,
     this.coupleId,
   });
 
   final String uid;
   final String name;
-  final String? photoUrl;
+  /// Foto de perfil (pequeña, ~30 KB) guardada dentro del perfil.
+  final Uint8List? photo;
   final String? coupleId;
 
   factory Profile.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -19,7 +22,7 @@ class Profile {
     return Profile(
       uid: doc.id,
       name: (d['name'] as String?) ?? '',
-      photoUrl: d['photoUrl'] as String?,
+      photo: (d['photo'] as Blob?)?.bytes,
       coupleId: d['coupleId'] as String?,
     );
   }
@@ -32,7 +35,7 @@ class Story {
   Story({
     required this.ownerUid,
     required this.storyId,
-    required this.imagePath,
+    required this.image,
     required this.message,
     required this.createdAt,
     required this.expiresAt,
@@ -41,7 +44,9 @@ class Story {
 
   final String ownerUid;
   final String storyId;
-  final String imagePath;
+  /// La foto comprimida. Viaja dentro del documento (plan gratis de
+  /// Firebase) y desaparece cuando el documento se borra o se reemplaza.
+  final Uint8List image;
   final String message;
   final DateTime createdAt;
   final DateTime expiresAt;
@@ -52,7 +57,7 @@ class Story {
 
   static Story? fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data();
-    if (d == null || d['storyId'] == null || d['imagePath'] == null) {
+    if (d == null || d['storyId'] == null || d['image'] is! Blob) {
       return null;
     }
     final expires = (d['expiresAt'] as Timestamp?)?.toDate();
@@ -60,7 +65,7 @@ class Story {
     return Story(
       ownerUid: doc.id,
       storyId: d['storyId'] as String,
-      imagePath: d['imagePath'] as String,
+      image: (d['image'] as Blob).bytes,
       message: (d['message'] as String?) ?? '',
       // Mientras el servidor no confirma la hora, usamos la local.
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ??

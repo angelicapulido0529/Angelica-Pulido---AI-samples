@@ -5,8 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../models.dart';
-import '../services/push_service.dart';
 import '../services/story_cache.dart';
+import '../services/story_service.dart';
 import '../services/widget_service.dart';
 import '../theme.dart';
 import '../widgets/photo_picker.dart';
@@ -60,12 +60,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         .collection('stories')
         .snapshots(includeMetadataChanges: true)
         .listen(_onStories));
-    _subs.add(PushService.onForegroundMessage.listen((m) {
-      final n = m.notification;
-      if (n != null && mounted) {
-        showMessage(context, [n.title, n.body].whereType<String>().join(' · '));
-      }
-    }));
     // Revisa cada minuto si alguna story ya cumplió 24 horas.
     _ticker = Timer.periodic(const Duration(minutes: 1), (_) => _expire());
   }
@@ -82,7 +76,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       for (final d in snap.docs) {
         if (d.id == uid) story = Story.fromDoc(d);
       }
-      if (story != null && !story.isActive) story = null;
+      if (story != null && !story.isActive) {
+        // Ya cumplió 24 h: se borra para siempre (de internet también).
+        if (fromServer) StoryService.deleteExpired(widget.coupleId, uid);
+        story = null;
+      }
 
       if (story == null) {
         // Solo borramos la copia local si el servidor confirma que ya no
@@ -115,6 +113,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _stories[uid] = null;
         _files[uid] = null;
         StoryCache.clear(uid);
+        StoryService.deleteExpired(widget.coupleId, uid);
         changed = true;
       }
     }

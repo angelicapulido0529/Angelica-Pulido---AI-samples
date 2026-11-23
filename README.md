@@ -30,5 +30,5 @@ A client project built to make personal finance tracking simple and professional
 ---
 
 ### Nosotros
-A private stories app for couples (Android & iPhone, built with Flutter + Firebase). Each person posts one photo with a short message, and it disappears after 24 hours or as soon as they post a new one. Stories can be liked and downloaded, can be viewed offline, and show up in a split-view home-screen widget.
+A private stories app for couples (Android & iPhone, built with Flutter + the free Firebase plan). Each person posts one photo with a short message, and it disappears after 24 hours or as soon as they post a new one. Stories can be liked and downloaded, can be viewed offline, and show up in a split-view home-screen widget.
 📁 nosotros/ · setup guide in nosotros/SETUP.md

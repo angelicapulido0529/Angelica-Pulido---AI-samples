@@ -71,7 +71,7 @@ class StoryHalf extends StatelessWidget {
       );
     }
 
-    final avatar = Avatar(url: profile?.photoUrl, name: name, size: 52);
+    final avatar = Avatar(photo: profile?.photo, name: name, size: 52);
     final namePill = Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(

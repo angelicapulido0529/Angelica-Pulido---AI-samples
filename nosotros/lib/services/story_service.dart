@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:gal/gal.dart';
 
 import 'story_cache.dart';
@@ -11,49 +10,58 @@ class StoryService {
   static const lifetime = Duration(hours: 24);
   static const maxMessageLength = 120;
 
+  /// El plan gratis guarda la foto dentro del documento (máx. 1 MB).
+  static const maxImageBytes = 950 * 1024;
+
   static final _db = FirebaseFirestore.instance;
 
   static CollectionReference<Map<String, dynamic>> stories(String coupleId) =>
       _db.collection('couples').doc(coupleId).collection('stories');
 
-  /// Sube una story nueva. Reemplaza la anterior (mismo documento) y el
-  /// servidor borra la foto vieja. Requiere internet.
+  /// Sube una story nueva. Usa el mismo documento que la anterior, así que
+  /// la anterior (y su foto) desaparece en ese momento. Requiere internet.
   static Future<void> publish({
     required String coupleId,
     required String uid,
     required File photo,
     required String message,
   }) async {
+    final bytes = await photo.readAsBytes();
+    if (bytes.length > maxImageBytes) throw const PhotoTooBigException();
+
     final doc = stories(coupleId).doc(uid);
     final storyId = _db.collection('_').doc().id;
-    final path = 'couples/$coupleId/stories/$uid/$storyId.jpg';
-
     try {
-      await FirebaseStorage.instance
-          .ref(path)
-          .putFile(photo, SettableMetadata(contentType: 'image/jpeg'))
-          .timeout(const Duration(seconds: 90));
-      final now = DateTime.now();
-      // Esperamos la confirmación del servidor: si no hay internet,
-      // preferimos avisar a dejar una story "a medias".
+      // Primero comprobamos que hay internet: sin conexión Firestore
+      // guardaría la story "pendiente" y la subiría más tarde.
+      await _db
+          .collection('couples')
+          .doc(coupleId)
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 15));
       await doc.set({
         'storyId': storyId,
-        'imagePath': path,
+        'image': Blob(bytes),
         'message': message.trim(),
         'createdAt': FieldValue.serverTimestamp(),
-        'expiresAt': Timestamp.fromDate(now.add(lifetime)),
+        'expiresAt': Timestamp.fromDate(DateTime.now().add(lifetime)),
         'likedAt': null,
         'likedBy': null,
-      }).timeout(const Duration(seconds: 30));
+      }).timeout(const Duration(seconds: 60));
     } on TimeoutException {
       throw const NoInternetException();
     } on FirebaseException catch (e) {
-      if (e.code == 'unavailable' || e.code == 'retry-limit-exceeded') {
-        throw const NoInternetException();
-      }
+      if (e.code == 'unavailable') throw const NoInternetException();
       rethrow;
     }
     await StoryCache.storeOwn(uid, storyId, photo);
+  }
+
+  /// Borra una story que ya cumplió 24 horas (cualquiera de los dos puede).
+  static Future<void> deleteExpired(String coupleId, String ownerUid) async {
+    try {
+      await stories(coupleId).doc(ownerUid).delete();
+    } catch (_) {}
   }
 
   /// Da (o quita) like a la story de tu pareja.
@@ -83,6 +91,12 @@ class NoInternetException implements Exception {
   const NoInternetException();
   @override
   String toString() => 'Necesitas internet para subir una story.';
+}
+
+class PhotoTooBigException implements Exception {
+  const PhotoTooBigException();
+  @override
+  String toString() => 'La foto es muy pesada. Prueba con otra.';
 }
 
 class GalleryPermissionException implements Exception {

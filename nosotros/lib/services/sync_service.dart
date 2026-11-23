@@ -1,38 +1,47 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:home_widget/home_widget.dart';
 
 import '../models.dart';
 import 'story_cache.dart';
+import 'story_service.dart';
 import 'widget_service.dart';
 
-/// Descarga las stories nuevas y actualiza el widget, aunque la app esté
-/// cerrada (lo llama la notificación push en segundo plano).
+/// Lo que cambió desde la última revisión (para avisar con una notificación).
+class SyncResult {
+  SyncResult({this.newStoryFrom, this.newStoryMessage, this.likedBy});
+  final String? newStoryFrom;
+  final String? newStoryMessage;
+  final String? likedBy;
+}
+
+/// Revisa si hay stories nuevas o likes, borra las vencidas, guarda las
+/// fotos en el teléfono y actualiza el widget. Se usa en segundo plano
+/// (Android, cada ~15 min) aunque la app esté cerrada.
 class SyncService {
-  static Future<void> syncFromServer(String myUid) async {
+  static Future<SyncResult> syncFromServer(String myUid) async {
     final db = FirebaseFirestore.instance;
-    final meDoc = await db.collection('users').doc(myUid).get();
-    final me = Profile.fromDoc(meDoc);
+    const server = GetOptions(source: Source.server);
+    final me = Profile.fromDoc(await db.collection('users').doc(myUid).get(server));
     final coupleId = me.coupleId;
-    if (coupleId == null) return;
+    if (coupleId == null) return SyncResult();
 
-    final couple = await db.collection('couples').doc(coupleId).get();
+    final couple = await db.collection('couples').doc(coupleId).get(server);
     final members = List<String>.from(couple.data()?['members'] ?? const []);
-    final partnerUid =
-        members.firstWhere((m) => m != myUid, orElse: () => '');
-    if (partnerUid.isEmpty) return;
+    final partnerUid = members.firstWhere((m) => m != myUid, orElse: () => '');
+    if (partnerUid.isEmpty) return SyncResult();
     final partner =
-        Profile.fromDoc(await db.collection('users').doc(partnerUid).get());
+        Profile.fromDoc(await db.collection('users').doc(partnerUid).get(server));
 
-    final snap = await db
-        .collection('couples')
-        .doc(coupleId)
-        .collection('stories')
-        .get(const GetOptions(source: Source.server));
+    final snap = await StoryService.stories(coupleId).get(server);
     Story? find(String uid) {
       for (final d in snap.docs) {
-        if (d.id == uid) {
-          final s = Story.fromDoc(d);
-          return (s != null && s.isActive) ? s : null;
+        if (d.id != uid) continue;
+        final s = Story.fromDoc(d);
+        if (s != null && !s.isActive) {
+          StoryService.deleteExpired(coupleId, uid);
+          return null;
         }
+        return s;
       }
       return null;
     }
@@ -41,6 +50,22 @@ class SyncService {
     final partnerStory = find(partnerUid);
     if (myStory == null) await StoryCache.clear(myUid);
     if (partnerStory == null) await StoryCache.clear(partnerUid);
+
+    // ¿Qué hay de nuevo desde la última vez?
+    final seenPartnerStory = await WidgetSide.savedStoryId('partner');
+    final seenLike = await HomeWidget.getWidgetData<String>('me_liked_story');
+    final result = SyncResult(
+      newStoryFrom: partnerStory != null && partnerStory.storyId != seenPartnerStory
+          ? partner.name
+          : null,
+      newStoryMessage: partnerStory?.message,
+      likedBy: myStory != null && myStory.isLiked && seenLike != myStory.storyId
+          ? partner.name
+          : null,
+    );
+    if (myStory != null && myStory.isLiked) {
+      await HomeWidget.saveWidgetData<String>('me_liked_story', myStory.storyId);
+    }
 
     await WidgetService.update(
       me: WidgetSide(
@@ -51,9 +76,9 @@ class SyncService {
       partner: WidgetSide(
         profile: partner,
         story: partnerStory,
-        file:
-            partnerStory == null ? null : await StoryCache.fileFor(partnerStory),
+        file: partnerStory == null ? null : await StoryCache.fileFor(partnerStory),
       ),
     );
+    return result;
   }
 }

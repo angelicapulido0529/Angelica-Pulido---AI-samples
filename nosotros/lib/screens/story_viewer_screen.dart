@@ -174,7 +174,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                     Row(
                       children: [
                         Avatar(
-                            url: widget.owner.photoUrl,
+                            photo: widget.owner.photo,
                             name: widget.owner.name,
                             size: 40),
                         const SizedBox(width: 10),

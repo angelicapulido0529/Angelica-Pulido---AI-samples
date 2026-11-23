@@ -37,9 +37,10 @@ Future<File?> pickPhoto(BuildContext context, {bool forAvatar = false}) async {
   if (source == null) return null;
   final picked = await ImagePicker().pickImage(
     source: source,
-    maxWidth: forAvatar ? 512 : 1440,
-    maxHeight: forAvatar ? 512 : 2560,
-    imageQuality: forAvatar ? 85 : 82,
+    // Fotos ligeras: así caben en el plan gratis de Firebase.
+    maxWidth: forAvatar ? 256 : 1080,
+    maxHeight: forAvatar ? 256 : 1920,
+    imageQuality: forAvatar ? 80 : 70,
     preferredCameraDevice:
         forAvatar ? CameraDevice.front : CameraDevice.rear,
   );

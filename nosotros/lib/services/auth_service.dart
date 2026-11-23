@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 class AuthService {
   static final _auth = FirebaseAuth.instance;
@@ -19,15 +18,15 @@ class AuthService {
           email: email.trim(), password: password);
 
   /// Crea el perfil (nombre + foto) de la persona que acaba de registrarse.
+  /// La foto de perfil es pequeña y se guarda dentro del perfil.
   static Future<void> createProfile({
     required String name,
     required File photo,
   }) async {
     final uid = _auth.currentUser!.uid;
-    final photoUrl = await _uploadAvatar(uid, photo);
     await _db.collection('users').doc(uid).set({
       'name': name.trim(),
-      'photoUrl': photoUrl,
+      'photo': Blob(await photo.readAsBytes()),
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
@@ -35,19 +34,15 @@ class AuthService {
   /// Cambia la foto de perfil (la que aparece en las stories).
   static Future<void> updatePhoto(File photo) async {
     final uid = _auth.currentUser!.uid;
-    final url = await _uploadAvatar(uid, photo);
-    await _db.collection('users').doc(uid).update({'photoUrl': url});
+    await _db
+        .collection('users')
+        .doc(uid)
+        .update({'photo': Blob(await photo.readAsBytes())});
   }
 
   static Future<void> updateName(String name) async {
     final uid = _auth.currentUser!.uid;
     await _db.collection('users').doc(uid).update({'name': name.trim()});
-  }
-
-  static Future<String> _uploadAvatar(String uid, File photo) async {
-    final ref = FirebaseStorage.instance.ref('avatars/$uid.jpg');
-    await ref.putFile(photo, SettableMetadata(contentType: 'image/jpeg'));
-    return ref.getDownloadURL();
   }
 
   static Future<void> signOut() => _auth.signOut();

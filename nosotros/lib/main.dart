@@ -1,10 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'firebase_options.dart';
 import 'root_gate.dart';
-import 'services/push_service.dart';
 import 'services/widget_service.dart';
 import 'theme.dart';
 
@@ -15,7 +13,6 @@ Future<void> main() async {
     return;
   }
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
   await WidgetService.init();
   runApp(const NosotrosApp());
 }

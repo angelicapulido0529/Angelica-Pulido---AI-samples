@@ -72,10 +72,5 @@
 	<string>Para elegir la foto de tu story.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Para guardar en tu galería las stories que descargues.</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
 </dict>
 </plist>

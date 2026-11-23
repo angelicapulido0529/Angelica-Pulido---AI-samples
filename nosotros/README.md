@@ -10,11 +10,12 @@ la mandó.
 | Regla | Cómo se cumple |
 |---|---|
 | Solo dos personas | Se vinculan con un código de 6 dígitos. Cuando entra la segunda persona, el código se borra y nadie más puede unirse (lo controla el servidor y las reglas de seguridad). |
-| Una story por persona | Cada persona tiene un solo "espacio" de story. Subir una nueva reemplaza la anterior y el servidor borra la foto vieja. |
-| Duran 24 horas | La app las oculta al cumplir 24 h (aunque no haya internet), y el servidor las borra cada 10 min. |
+| Una story por persona | Cada persona tiene un solo "espacio" de story. Subir una nueva **sobrescribe** la anterior: la foto vieja deja de existir. |
+| Duran 24 horas | Al cumplir 24 h la app la oculta (aunque no haya internet) y la borra de internet. |
 | No se guardan | No hay historial ni galería. Solo puedes **descargarla** a tu teléfono o darle **like** ❤️. |
 | Subir con internet, ver sin internet | La foto se guarda en el teléfono al llegar; se ve offline hasta que expira. |
-| Notificaciones | "Pepeta subió una story nueva 📸" y "A Momido le gustó tu story ❤️". |
+| Avisos | En Android, la app revisa sola cada ~15 min y avisa: "Pepeta subió una story nueva 📸" o "A Momido le gustó tu story ❤️". |
+| Gratis | Usa el plan gratis de Firebase (Spark), **sin tarjeta**. |
 | Widget | Widget en la pantalla de inicio con la vista dividida (funciona sin internet). |
 
 ## Partes
@@ -22,7 +23,6 @@ la mandó.
 - `lib/`: la app (Flutter: un solo código para Android y iPhone).
 - `android/.../StoryWidgetProvider.kt`: widget de Android.
 - `ios/StoryWidget/`: widget de iPhone.
-- `functions/`: servidor (Cloud Functions): vincular pareja, notificaciones y borrar fotos.
-- `firestore.rules`, `storage.rules`: seguridad (solo la pareja ve sus stories).
+- `firestore.rules`: seguridad (solo la pareja ve sus stories; máximo dos personas).
 
 **Para instalarla, sigue [SETUP.md](SETUP.md).**
