@@ -1,0 +1,72 @@
+# Compila la app "Nosotros" para Android y publica el APK en
+# Releases → "Nosotros (última versión)", para descargarlo desde el celular.
+name: Nosotros · APK Android
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "nosotros/**"
+      - ".github/workflows/nosotros-android.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nosotros
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+
+      - name: Firma (opcional, para poder actualizar sin desinstalar)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        if: env.KEYSTORE_BASE64 != ''
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+          cat > android/key.properties <<PROPS
+          storeFile=release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=nosotros
+          keyPassword=$KEYSTORE_PASSWORD
+          PROPS
+
+      - run: flutter build apk --release
+
+      - name: Renombrar APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk ../Nosotros.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Nosotros-apk
+          path: Nosotros.apk
+
+      - name: Publicar en Releases
+        if: github.ref_type == 'branch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nosotros-latest
+          name: Nosotros (última versión)
+          prerelease: true
+          make_latest: false
+          files: Nosotros.apk
+          body: |
+            Abre este enlace desde tu celular Android y descarga **Nosotros.apk**.
+            Rama: `${{ github.ref_name }}` · commit `${{ github.sha }}`

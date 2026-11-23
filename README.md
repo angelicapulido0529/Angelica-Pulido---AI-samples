@@ -26,3 +26,9 @@ A blog made for Gen Z girls. Born in an era when blogs were no longer trending, 
 ### Personal Finances
 A client project built to make personal finance tracking simple and professional. Users can log every transaction and keep an up-to-date, clear view of their finances.
 📄 personal_finances.html
+
+---
+
+### Nosotros
+A private stories app for couples (Android & iPhone, built with Flutter + Firebase). Each person posts one photo with a short message, and it disappears after 24 hours or as soon as they post a new one. Stories can be liked and downloaded, can be viewed offline, and show up in a split-view home-screen widget.
+📁 nosotros/ · setup guide in nosotros/SETUP.md

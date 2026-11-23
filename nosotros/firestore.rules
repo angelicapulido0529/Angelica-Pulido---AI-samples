@@ -1,0 +1,79 @@
+rules_version = '2';
+
+// Solo las dos personas de la pareja pueden ver o tocar sus stories.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function myCouple() {
+      return get(/databases/$(database)/documents/users/$(me())).data.get('coupleId', null);
+    }
+    function isMember(coupleId) {
+      return signedIn() &&
+        me() in get(/databases/$(database)/documents/couples/$(coupleId)).data.members;
+    }
+
+    match /users/{uid} {
+      // Tu perfil, o el de tu pareja.
+      allow read: if signedIn() && (uid == me() ||
+        (myCouple() != null &&
+         resource.data.get('coupleId', null) == myCouple()));
+      // La pareja (coupleId) solo la asigna el servidor.
+      allow create: if signedIn() && uid == me() &&
+        request.resource.data.keys().hasOnly(['name', 'photoUrl', 'createdAt', 'fcmTokens']) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.name.size() <= 20;
+      allow update: if signedIn() && uid == me() &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['name', 'photoUrl', 'fcmTokens']) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.name.size() <= 20;
+    }
+
+    match /couples/{coupleId} {
+      allow read: if isMember(coupleId);
+      allow write: if false; // Solo Cloud Functions.
+
+      // Un documento por persona (id = su uid): una story nueva reemplaza
+      // a la anterior.
+      match /stories/{ownerUid} {
+        allow read: if isMember(coupleId);
+
+        // Subir o reemplazar tu propia story.
+        allow create, update: if isMember(coupleId) && ownerUid == me() &&
+          request.resource.data.keys().hasOnly(
+            ['storyId', 'imagePath', 'message', 'createdAt', 'expiresAt', 'likedAt', 'likedBy']) &&
+          request.resource.data.storyId is string &&
+          request.resource.data.imagePath ==
+            'couples/' + coupleId + '/stories/' + ownerUid + '/' +
+            request.resource.data.storyId + '.jpg' &&
+          request.resource.data.message is string &&
+          request.resource.data.message.size() <= 120 &&
+          request.resource.data.createdAt == request.time &&
+          request.resource.data.expiresAt is timestamp &&
+          request.resource.data.expiresAt <= request.time + duration.value(25, 'h') &&
+          request.resource.data.likedAt == null &&
+          request.resource.data.likedBy == null;
+
+        // Tu pareja solo puede dar o quitar like.
+        allow update: if isMember(coupleId) && ownerUid != me() &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['likedAt', 'likedBy']) &&
+          ((request.resource.data.likedAt == request.time &&
+            request.resource.data.likedBy == me()) ||
+           (request.resource.data.likedAt == null &&
+            request.resource.data.likedBy == null));
+
+        allow delete: if isMember(coupleId) && ownerUid == me();
+      }
+    }
+
+    // Los códigos para vincularse solo los usa el servidor.
+    match /codes/{code} {
+      allow read, write: if false;
+    }
+  }
+}
