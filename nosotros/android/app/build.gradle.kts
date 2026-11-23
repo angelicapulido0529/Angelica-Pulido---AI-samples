@@ -8,7 +8,8 @@ plugins {
 
 android {
     namespace = "com.nosotrosapp.nosotros"
-    compileSdk = flutter.compileSdkVersion
+    // Las librerías de AndroidX recientes piden compilar con la API 37.
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
