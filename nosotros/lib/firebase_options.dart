@@ -8,13 +8,13 @@ import 'dart:io' show Platform;
 import 'package:firebase_core/firebase_core.dart';
 
 class DefaultFirebaseOptions {
-  static const _projectId = 'PENDIENTE';
-  static const _messagingSenderId = 'PENDIENTE';
-  static const _storageBucket = 'PENDIENTE';
+  static const _projectId = 'angie-app-d6e6f';
+  static const _messagingSenderId = '24667882556';
+  static const _storageBucket = 'angie-app-d6e6f.firebasestorage.app';
 
   static const android = FirebaseOptions(
-    apiKey: 'PENDIENTE',
-    appId: 'PENDIENTE',
+    apiKey: 'AIzaSyBjSAoLeC6vY7e8BtJBGbEe131cHp_jwP0',
+    appId: '1:24667882556:android:4f8f2e436d67da7b9cef39',
     messagingSenderId: _messagingSenderId,
     projectId: _projectId,
     storageBucket: _storageBucket,
