@@ -1,7 +1,6 @@
 // Configuración de Firebase.
 //
-// Reemplaza los valores "PENDIENTE" con los de tu proyecto de Firebase
-// (ver SETUP.md, paso 2). Estos valores NO son secretos: identifican tu
+// Proyecto "Angie app" (angie-app-d6e6f). Estos valores NO son secretos: identifican tu
 // proyecto, y la seguridad la dan las reglas de Firestore y Storage.
 import 'dart:io' show Platform;
 
@@ -21,12 +20,12 @@ class DefaultFirebaseOptions {
   );
 
   static const ios = FirebaseOptions(
-    apiKey: 'PENDIENTE',
-    appId: 'PENDIENTE',
+    apiKey: 'AIzaSyCe0rgesjkzWyCBUfSM2SSgVIFyWj7Upio',
+    appId: '1:24667882556:ios:4153884ccee484cd9cef39',
     messagingSenderId: _messagingSenderId,
     projectId: _projectId,
     storageBucket: _storageBucket,
-    iosBundleId: 'com.nosotrosapp.nosotros',
+    iosBundleId: 'com.nosotrosapp.com',
   );
 
   static FirebaseOptions get currentPlatform =>
